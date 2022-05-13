@@ -148,7 +148,7 @@ def loginAndScan(proxy, site, env):
         zap.script.disable(scriptname)
 
 
-#this should be dynamic eventually.
+
 if __name__ == "__main__":
     load_dotenv("test.env")
     logging.basicConfig(level="INFO")
@@ -156,6 +156,7 @@ if __name__ == "__main__":
     proxy=str(os.getenv("PROXY"))+":"+str(os.getenv("PORT"))
     logging.info(proxy)
     #attempt to wait to initialize zap
+    #only really needed if the zap instance is remote.
     time.sleep(10)
 
     f=open("sites.json","r")
