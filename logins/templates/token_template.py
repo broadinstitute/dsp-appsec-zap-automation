@@ -15,8 +15,8 @@ def set_chrome_options(proxy) -> None:
     #chrome_options.add_argument("--headless")
     #chrome_options.add_argument("--no-sandbox")
     #chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument('--proxy-server='+ proxy)
-    chrome_options.add_argument('--allow-insecure-localhost')
+    chrome_options.add_argument("--proxy-server=" + proxy)
+    chrome_options.add_argument("--allow-insecure-localhost")
     return chrome_options
 
 
@@ -28,7 +28,7 @@ def login(proxy, env):
     """
     #allows you to use an untrusted cert with your proxy
     caps = webdriver.DesiredCapabilities.CHROME.copy() 
-    caps['acceptInsecureCerts'] = True
+    caps["acceptInsecureCerts"] = True
     driver = webdriver.Chrome(options=set_chrome_options(proxy), desired_capabilities=caps)
 
     #Ensures that 'sessId' is in the default token list
@@ -39,11 +39,11 @@ def login(proxy, env):
     #There's some flexibility here. env could contain the entire domain of your site.
     #Or env could contain just the part that changes between testing environments.
     #site needs to contain domain:port, such as localhost:3000 
-    site=env
-    url="https://"+site
-    authtype="token"
-    max_retries = int(os.getenv("MAX_RETRIES", '3'))
-    logged_in=False
+    site = env
+    url = "https://" + site
+    authtype = "token"
+    max_retries = int(os.getenv("MAX_RETRIES", "3"))
+    logged_in = False
 
     for attempt in range(max_retries):
         try:
@@ -56,9 +56,9 @@ def login(proxy, env):
             #This tool uses the sessid cookie for this purpose.
             #You will need to grab the token from where ever it is in the browser.
             token=driver.execute_script("return localStorage.getItem(\"token\")")
-            driver.execute_script('document.cookie="sessid='+token+'"')
+            driver.execute_script("document.cookie='sessid="+token+"'")
             #This request is to show the set cookie to ZAP.
-            driver.get(url+"/dashboard")
+            driver.get(url + "/dashboard")
 
             #Optional check to make sure the cookie was seen by ZAP.
             # sessions=zap.httpsessions.sessions(site=domain)
@@ -68,7 +68,7 @@ def login(proxy, env):
             print("Exception occurred: {0}".format(err))
         else:
             print("logged in")
-            logged_in=True
+            logged_in = True
             break
 
     driver.close()

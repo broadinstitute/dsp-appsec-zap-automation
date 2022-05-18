@@ -1,1 +1,1 @@
-Reports go in this directory. For now. 
+Reports will be output to this directory.
