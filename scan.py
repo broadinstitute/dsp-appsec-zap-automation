@@ -9,7 +9,6 @@ import importlib
 
 from dotenv import load_dotenv
 
-load_dotenv()
 
 
 def new_context(zap, domain):
