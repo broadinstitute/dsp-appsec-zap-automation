@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 import time
+from zapv2 import ZAPv2
 
 
 def set_chrome_options(proxy) -> None:
@@ -24,11 +25,14 @@ def set_chrome_options(proxy) -> None:
 
 
 
-def login(proxy, env):
+def login(proxy, env,site):
     """
     Webdriver script for logging into the angio project for ddp. 
     Sets the bearer token value to the sessid cookie. 
     """
+
+    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+
     caps = webdriver.DesiredCapabilities.CHROME.copy() 
     caps['acceptInsecureCerts'] = True
     driver = webdriver.Chrome(options=set_chrome_options(proxy), desired_capabilities=caps)
@@ -36,6 +40,8 @@ def login(proxy, env):
     
     domain="angio."+env+".datadonationplatform.org:443"
     url="https://"+domain
+    zap.context.include_in_context(site, ".*pepper-"  + env + ".datadonationplatform.org.*")
+
     authtype="token"
     max_retries = int(os.getenv("MAX_RETRIES", '3'))
     logged_in=False
