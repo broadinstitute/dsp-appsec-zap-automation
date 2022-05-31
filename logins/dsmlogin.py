@@ -19,11 +19,12 @@ def set_chrome_options(proxy) -> None:
     chrome_options.add_argument('--allow-insecure-localhost')
     return chrome_options
 
-def login(proxy, env):
+def login(proxy, env, site):
     """
     Webdriver script for logging into dsm. 
     Sets the bearer token value to the sessid cookie. 
     """
+    
     caps = webdriver.DesiredCapabilities.CHROME.copy() 
     caps['acceptInsecureCerts'] = True
     driver = webdriver.Chrome(options=set_chrome_options(proxy), desired_capabilities=caps)

@@ -19,7 +19,7 @@ def set_chrome_options(proxy) -> None:
     chrome_options.add_argument('--allow-insecure-localhost')
     return chrome_options
 
-def login(proxy, env):
+def login(proxy, env, site):
     """
     Webdriver script for logging into seqr. 
     """

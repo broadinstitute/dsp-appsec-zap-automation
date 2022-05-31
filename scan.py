@@ -1,5 +1,6 @@
 from http.client import PROXY_AUTHENTICATION_REQUIRED
 import json
+from posixpath import split
 import time
 import os
 import logging
@@ -23,7 +24,7 @@ def new_context(zap, domain):
     return domain
     
 
-def cookieauth(zap,contextID,context):
+def cookieauth(zap,contextID,domain):
     """
     Sets up the ZAP context to use cookies for authentication.
     Only works if the cookie used by the app is recognized as a session cookie by ZAP.
@@ -33,7 +34,7 @@ def cookieauth(zap,contextID,context):
     userid = zap.users.users_list(contextID)[0]["id"]
     #this is the secret sauce for using cookies. The user above is now associated with the active cookie.
     #It should always choose the newest one.
-    sessions=zap.httpsessions.sessions(site = context)
+    sessions=zap.httpsessions.sessions(site = domain)
     sessionName=sessions[-1]["session"][0]
     zap.users.set_authentication_credentials(contextID,userid,"sessionName=" + sessionName)
 
@@ -94,15 +95,19 @@ def loginAndScan(proxy, site, env):
     """
     module = importlib.import_module("logins." + site)
     login = getattr(module, "login")
+
+    #all sites will need to connect to zap and create a context.
+    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    context = new_context(zap, site)
     
-    domain, authtype, logged_in=login(proxy,env)
+    site, authtype, logged_in=login(proxy,env,site)
     if logged_in == False:
         logging.info("Failed to login, no scan will be performed.")
         return
 
-    #all sites will need to connect to zap and create a context.
-    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
-    context = new_context(zap, domain)
+    
+    domain = site.split(":")[0]
+    zap.context.include_in_context(context, ".*" + domain + ".*")
     contextID = zap.context.context(context)["id"]
 
     #There's probably a way to make this better. probably by putting it in the login script
@@ -111,15 +116,15 @@ def loginAndScan(proxy, site, env):
     zap.context.exclude_from_context(context, ".*/complete.*")
 
     if authtype == "cookie":
-        userName, userId=cookieauth(zap, contextID, context)
+        userName, userId=cookieauth(zap, contextID, site)
     elif authtype == "token":
-        userName, userId, scriptname=tokenauth(zap, contextID, domain)
+        userName, userId, scriptname=tokenauth(zap, contextID, site)
    
     #passive scan
     zap.pscan.enable_all_scanners()
    
     #run spider
-    zap.spider.scan_as_user(contextID, userId, "https://"+domain)
+    zap.spider.scan_as_user(contextID, userId, "https://"+site)
     time.sleep(5)
     while (zap.spider.status == "running"):
         logging.debug("Spider still running")
@@ -129,7 +134,7 @@ def loginAndScan(proxy, site, env):
     #run ajax spider
     #this needs to be configurable.
     zap.ajaxSpider.set_option_max_duration(5)
-    zap.ajaxSpider.scan_as_user(context, userName, "https://"+domain)
+    zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
     time.sleep(5)
     while (zap.ajaxSpider.status == "running"):
         logging.debug("Ajax Spider still running")
@@ -143,7 +148,8 @@ def loginAndScan(proxy, site, env):
         logging.debug("Active scanner running")
         time.sleep(5)
     logging.debug("Active scanner complete")
-    pullReport(zap, context, "https://" + domain, site)
+
+    pullReport(zap, context, "https://" + site, site)
 
     if authtype == "token":
         zap.script.disable(scriptname)

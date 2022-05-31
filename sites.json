@@ -1,1 +1,2 @@
-[{"site":"ddp","env":"staging","login":"ddplogin"}]
+[{"site":"dsm","env":"staging","login":"dsmlogin"},
+    {"site":"ddp","env":"staging","login":"ddplogin"}]
