@@ -12,7 +12,7 @@ env:
   PROXY: http://127.0.0.1
   PORT: 8081
   DDP_USER: ${{secrets.DDP_USER}}
-  DDP_PASS: ${{secrest.DDP_PASS}}
+  DDP_PASS: ${{secrets.DDP_PASS}}
   REPORT_DIR: ./tmp
 
 
