@@ -16,11 +16,15 @@ def set_chrome_options(proxy) -> None:
     """
     chrome_options = Options()
     #When using this in a container, uncomment the lines below
-    #chrome_options.add_argument("--headless")
-    #chrome_options.add_argument("--no-sandbox")
-    #chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument('--proxy-server='+ proxy)
     chrome_options.add_argument('--allow-insecure-localhost')
+    chrome_options.add_argument('--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36"')
+    chrome_options.add_argument('--window-size=1600,1000')
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--lang=en")
     return chrome_options
 
 
@@ -40,7 +44,7 @@ def login(proxy, env,site):
     
     domain="angio."+env+".datadonationplatform.org:443"
     url="https://"+domain
-    zap.context.include_in_context(site, ".*pepper-"  + env + ".datadonationplatform.org.*")
+    zap.context.include_in_context(site+"_authenticated_scan", ".*pepper-"  + env + ".datadonationplatform.org.*")
 
     authtype="token"
     max_retries = int(os.getenv("MAX_RETRIES", '3'))
@@ -73,8 +77,8 @@ def login(proxy, env,site):
             driver.execute_script('document.cookie="sessid='+token+'"')
             driver.get(url+"/dashboard")
             time.sleep(2)
-        except:
-            print("Login failed. Attempt no "+str(attempt+1))
+        except Exception as err:
+            print("Exception occurred: {0}".format(err))
         else:
             print("logged in")
             logged_in=True

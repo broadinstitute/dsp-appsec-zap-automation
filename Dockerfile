@@ -1,7 +1,13 @@
-FROM python:3.8
+FROM owasp/zap2docker-stable
 
 COPY . /app
 WORKDIR /app
+
+USER root
+
+
+#install python
+RUN apt-get install -y python3.8
 
 # install google chrome
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add -
@@ -15,12 +21,12 @@ RUN wget -O /tmp/chromedriver.zip http://chromedriver.storage.googleapis.com/`cu
 RUN unzip /tmp/chromedriver.zip chromedriver -d /usr/local/bin/
 
 # set display port to avoid crash
-ENV DISPLAY=:99
+
 
 RUN pip install --upgrade pip
 
 
 RUN pip install -r requirements.txt
+RUN chmod 777 launcher.sh
 
-
-CMD ["python", "scan.py"]
+ENTRYPOINT [ "/bin/bash" ]
