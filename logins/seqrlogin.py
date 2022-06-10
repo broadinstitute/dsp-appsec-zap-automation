@@ -1,9 +1,11 @@
+import time
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
 import os
+from zapv2 import ZAPv2
 
 
 def set_chrome_options(proxy) -> None:
@@ -12,20 +14,28 @@ def set_chrome_options(proxy) -> None:
     """
     chrome_options = Options()
     #When using this in a container, uncomment the lines below
-    #chrome_options.add_argument("--headless")
-    #chrome_options.add_argument("--no-sandbox")
-    #chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument('--proxy-server='+ proxy)
     chrome_options.add_argument('--allow-insecure-localhost')
+    chrome_options.add_argument('--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36"')
+    chrome_options.add_argument('--window-size=1600,1000')
+    chrome_options.add_argument("--start-maximized")
+    chrome_options.add_argument("--lang=en")
     return chrome_options
 
-def login(proxy, env):
+def login(proxy, env, site):
     """
     Webdriver script for logging into seqr. 
     """
     caps = webdriver.DesiredCapabilities.CHROME.copy() 
     caps['acceptInsecureCerts'] = True
     driver = webdriver.Chrome(options=set_chrome_options(proxy), desired_capabilities=caps)
+
+    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    cookieName="sessionid"
+    zap.httpsessions.add_default_session_token(cookieName)
 
 
     domain="seqr-"+env+".broadinstitute.org:443"
@@ -44,8 +54,9 @@ def login(proxy, env):
             driver.find_element(by=By.LINK_TEXT, value="Log in").click()
             #next page. should be google login.
             expected_conditions.title_is("Sign in - Google Accounts")
+            time.sleep(5)
             
-            driver.find_element(by=By.ID, value="identifierId").send_keys(os.getenv("SEQR_LOGIN"))
+            driver.find_element(by=By.ID, value="identifierId").send_keys(os.getenv("SEQR_USER"))
             driver.find_element(by=By.ID, value="identifierNext").click()
             #what in the what is the double parens.
             driver.implicitly_wait(3)
@@ -58,7 +69,6 @@ def login(proxy, env):
             expected_conditions.title_contains("seqr")
             expected_conditions.presence_of_all_elements_located((By.LINK_TEXT,"Summary Data"))
             driver.find_element(by=By.LINK_TEXT, value="Summary Data").click()
-            driver.implicitly_wait(10)
 
 
         except Exception as err:

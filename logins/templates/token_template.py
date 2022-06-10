@@ -21,7 +21,7 @@ def set_chrome_options(proxy) -> None:
 
 
 
-def login(proxy, env):
+def login(proxy, env, site):
     """
     Webdriver script for logging in to a website. 
     Sets the bearer token value to the sessid cookie. 

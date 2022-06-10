@@ -1,1 +1,2 @@
-[{"site":"ddp","env":"staging","login":"ddplogin"}]
+[
+    {"site":"seqr","env":"dev","login":"seqrlogin"}]
