@@ -101,7 +101,7 @@ def loginAndScan(proxy, script, env):
     
     site, authtype, logged_in=login(proxy,env,script)
     if logged_in == False:
-        logging.info("Failed to login, no scan will be performed.")
+        logging.info("Failed to login, no scan will be performed for "+script)
         return
 
     logging.info("site is:"+ site)
@@ -169,15 +169,16 @@ if __name__ == "__main__":
     logging.info(proxy)
     #attempt to wait to initialize zap
     #only really needed if the zap instance is remote.
-    time.sleep(10)
-
+    time.sleep(20)
+    
     f = open("sites.json", "r")
     sites = json.load(f)
     for elem in sites:
-        print(elem["site"])
+        logging.info("Starting scan for "+elem["site"])
         loginAndScan(proxy, elem["login"], elem["env"])
 
-    print("test complete")
+    logging.info("All test complete")
+
    
     
     
