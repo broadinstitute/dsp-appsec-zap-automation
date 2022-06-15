@@ -68,6 +68,13 @@ def login(proxy, env, site):
             else:
                 print("browser is flagged as bad by the googs")
                 break
+            try:
+                driver.find_element(by=By.ID, value="identifierId")                
+            except:
+                print("failed to find username input")
+            else:
+                print("browser is throwing a captcha")
+                break
             driver.implicitly_wait(3)
             expected_conditions.presence_of_element_located((By.NAME, "password"))
             driver.implicitly_wait(6)
