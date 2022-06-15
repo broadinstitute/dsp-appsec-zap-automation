@@ -59,7 +59,15 @@ def login(proxy, env, site):
             driver.find_element(by=By.ID, value="identifierId").send_keys(os.getenv("SEQR_USER"))
             driver.find_element(by=By.ID, value="identifierNext").click()
             #what in the what is the double parens.
-            #time.sleep(30)
+            time.sleep(5)
+            try:
+                driver.findElement(By.xpath("//*[text()='This browser or app may not be secure']"))
+                
+            except:
+                print("failed to find text")
+            else:
+                print("browser is flagged as bad by the googs")
+                break
             driver.implicitly_wait(3)
             expected_conditions.presence_of_element_located((By.NAME, "password"))
             driver.implicitly_wait(6)
