@@ -42,7 +42,7 @@ def login(proxy, env, site):
     url="https://"+domain
     authtype="cookie"
 
-    max_retries = int(os.getenv("MAX_RETRIES", '3'))
+    max_retries = int(os.getenv("MAX_RETRIES", '1'))
     logged_in=False
 
     for attempt in range(max_retries):
@@ -59,6 +59,7 @@ def login(proxy, env, site):
             driver.find_element(by=By.ID, value="identifierId").send_keys(os.getenv("SEQR_USER"))
             driver.find_element(by=By.ID, value="identifierNext").click()
             #what in the what is the double parens.
+            #time.sleep(30)
             driver.implicitly_wait(3)
             expected_conditions.presence_of_element_located((By.NAME, "password"))
             driver.implicitly_wait(6)
