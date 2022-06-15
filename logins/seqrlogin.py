@@ -74,7 +74,7 @@ def login(proxy, env, site):
                 print("failed to find username input")
             else:
                 print("browser is throwing a captcha")
-                domstring=driver.execute_script("var s = new XMLSerializer(); var d = document; var str = s.serializeToString(d); return s;")
+                domstring=driver.execute_script("var xmlString = new XMLSerializer().serializeToString( document ); return xmlString;")
                 print(domstring)
                 break
             driver.implicitly_wait(3)
