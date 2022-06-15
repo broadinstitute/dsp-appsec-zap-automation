@@ -169,7 +169,7 @@ if __name__ == "__main__":
     logging.info(proxy)
     #attempt to wait to initialize zap
     #only really needed if the zap instance is remote.
-    time.sleep(2)
+    time.sleep(20)
     
     f = open("sites.json", "r")
     sites = json.load(f)
