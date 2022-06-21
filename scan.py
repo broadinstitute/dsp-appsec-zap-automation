@@ -10,6 +10,8 @@ import importlib
 
 from dotenv import load_dotenv
 
+import export_reports
+
 
 
 def new_context(zap, domain):
@@ -82,7 +84,8 @@ def pullReport(zap, context, url, site):
     Directory must be local to ZAP.
     """
     template = "traditional-xml"
-    zap.reports.generate(title=site, template=template, contexts=context, sites=url, reportdir=os.getenv("REPORT_DIR"))
+    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url, reportdir=os.getenv("REPORT_DIR"))
+    return returnvalue
 
 
 def loginAndScan(proxy, script, env):
@@ -159,7 +162,7 @@ def loginAndScan(proxy, script, env):
     if authtype == "token":
         zap.script.disable(scriptname)
 
-def testScan(proxy, script, env):
+def testScan(proxy, script, env, project):
     """
     Calls the login function for the site being scanned, 
     and runs the spider. It does not run attacks or generate a report.
@@ -204,6 +207,9 @@ def testScan(proxy, script, env):
         time.sleep(5)
     logging.info("Spider complete")
 
+    reportFile = pullReport(zap, context, "https://" + site, site)
+    export_reports.codedx_upload(project,reportFile)
+
 
 
     zap.forcedUser.set_forced_user_mode_enabled(False)
@@ -214,12 +220,14 @@ def testScan(proxy, script, env):
 if __name__ == "__main__":
     #attempt to wait to initialize zap
     #If running locally, this can be commented out.
-    time.sleep(20)
+    #time.sleep(20)
 
+    #For local testing
+    #load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
-    if (os.getenv("DEBUG")==True):
-        #For local testing
-        #load_dotenv("test.env")
+     
+    if (os.getenv("DEBUG")=="True"):
+       
         logging.basicConfig(level="DEBUG")
         logging.info(proxy)
         logging.info("Test scan running")
@@ -228,7 +236,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            testScan(proxy, elem["login"], elem["env"])
+            testScan(proxy, elem["login"], elem["env"], elem["codedx"])
 
     else:
         logging.basicConfig(level="INFO")
