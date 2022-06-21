@@ -214,7 +214,7 @@ def testScan(proxy, script, env):
 if __name__ == "__main__":
     #attempt to wait to initialize zap
     #If running locally, this can be commented out.
-    #time.sleep(20)
+    time.sleep(20)
 
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
     if (os.getenv("DEBUG")=="True"):
