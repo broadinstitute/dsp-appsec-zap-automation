@@ -156,7 +156,8 @@ def loginAndScan(proxy, script, env):
         time.sleep(5)
     logging.info("Active scanner complete")
 
-    pullReport(zap, context, "https://" + site, site)
+    reportFile = pullReport(zap, context, "https://" + site, site)
+    export_reports.codedx_upload(project,reportFile)
     zap.forcedUser.set_forced_user_mode_enabled(False)
 
     if authtype == "token":
@@ -228,7 +229,7 @@ if __name__ == "__main__":
      
     if (os.getenv("DEBUG")==True):
        
-        logging.basicConfig(level="DEBUG")
+        logging.basicConfig(level="INFO")
         logging.info(proxy)
         logging.info("Test scan running")
 
