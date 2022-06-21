@@ -220,7 +220,7 @@ def testScan(proxy, script, env, project):
 if __name__ == "__main__":
     #attempt to wait to initialize zap
     #If running locally, this can be commented out.
-    #time.sleep(20)
+    time.sleep(20)
 
     #For local testing
     #load_dotenv("test.env")
