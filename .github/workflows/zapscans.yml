@@ -14,7 +14,7 @@ env:
   DDP_USER: ${{secrets.DDP_USER}}
   DDP_PASS: ${{secrets.DDP_PASS}}
   REPORT_DIR: ./tmp
-  DEBUG: True
+  DEBUG: false
 
 
 jobs:

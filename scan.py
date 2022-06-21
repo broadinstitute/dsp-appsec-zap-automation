@@ -101,7 +101,7 @@ def loginAndScan(proxy, script, env):
     
     site, authtype, logged_in=login(proxy,env,script)
     if logged_in == False:
-        logging.info("Failed to login, no scan will be performed.")
+        logging.info("Failed to login, no scan will be performed for "+script)
         return
 
     logging.info("site is:"+ site)
@@ -132,52 +132,117 @@ def loginAndScan(proxy, script, env):
 
     #run ajax spider
     #this needs to be configurable.
-    # zap.ajaxSpider.set_option_max_duration(4)
-    # zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
-    # time.sleep(10)
-    # count=0
-    # while (zap.ajaxSpider.status == "running"):
-    #     logging.debug("Ajax Spider still running")
-    #     time.sleep(10)
-    #     count=count+1
-    #     if count > 24:
-    #         zap.ajaxSpider.stop()
-    # logging.info("Ajax Spider complete")
+    zap.ajaxSpider.set_option_max_duration(4)
+    zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
+    time.sleep(10)
+    count=0
+    while (zap.ajaxSpider.status == "running"):
+        logging.debug("Ajax Spider still running")
+        time.sleep(10)
+        count=count+1
+        if count > 24:
+            zap.ajaxSpider.stop()
+    logging.info("Ajax Spider complete")
 
     # #Run active scan as the authenticated user.
-    # zap.ascan.scan_as_user(contextid=contextID, userid=userId)
-    # time.sleep(60)
-    # while (zap.ascan.status() != "100"):
-    #     status=zap.ascan.status()
-    #     logging.info(status)
-    #     time.sleep(5)
-    # logging.info("Active scanner complete")
+    zap.ascan.scan_as_user(contextid=contextID, userid=userId)
+    time.sleep(60)
+    while (zap.ascan.status() != "100"):
+        status=zap.ascan.status()
+        logging.info(status)
+        time.sleep(5)
+    logging.info("Active scanner complete")
 
-    # pullReport(zap, context, "https://" + site, site)
-    # zap.forcedUser.set_forced_user_mode_enabled(False)
+    pullReport(zap, context, "https://" + site, site)
+    zap.forcedUser.set_forced_user_mode_enabled(False)
 
     if authtype == "token":
         zap.script.disable(scriptname)
 
+def testScan(proxy, script, env):
+    """
+    Calls the login function for the site being scanned, 
+    and runs the spider. It does not run attacks or generate a report.
+    """
+    module = importlib.import_module("logins." + script)
+    login = getattr(module, "login")
 
+    #all sites will need to connect to zap and create a context.
+    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    context = new_context(zap, script)
+    contextID = zap.context.context(context)["id"]
+    zap.authentication.set_authentication_method(contextID,"manualAuthentication")
+    
+    site, authtype, logged_in=login(proxy,env,script)
+    if logged_in == False:
+        logging.info("Failed to login, no scan will be performed for "+script)
+        return
+
+    logging.info("site is:"+ site)
+    domain = site.split(":")[0]
+    zap.context.include_in_context(context, ".*" + domain + ".*")
+    
+
+    #There's probably a way to make this better. probably by putting it in the login script
+    zap.context.exclude_from_context(context, ".*/login.*")
+    zap.context.exclude_from_context(context, ".*/logout.*")
+    zap.context.exclude_from_context(context, ".*/complete.*")
+
+    if authtype == "cookie":
+        userName, userId=cookieauth(zap, contextID, site)
+    elif authtype == "token":
+        userName, userId, scriptname=tokenauth(zap, contextID, site)
+   
+    #passive scan
+    zap.pscan.enable_all_scanners()
+   
+    #run spider
+    zap.spider.scan_as_user(contextID, userId, "https://"+site)
+    time.sleep(5)
+    while (zap.spider.status == "running"):
+        logging.debug("Spider still running")
+        time.sleep(5)
+    logging.info("Spider complete")
+
+
+
+    zap.forcedUser.set_forced_user_mode_enabled(False)
+
+    if authtype == "token":
+        zap.script.disable(scriptname)
 
 if __name__ == "__main__":
-    #load_dotenv("test.env")
-    logging.basicConfig(level="INFO")
+    #attempt to wait to initialize zap
+    #If running locally, this can be commented out.
+    time.sleep(20)
 
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
-    logging.info(proxy)
-    #attempt to wait to initialize zap
-    #only really needed if the zap instance is remote.
-    time.sleep(10)
+    if (os.getenv("DEBUG")==True):
+        #For local testing
+        #load_dotenv("test.env")
+        logging.basicConfig(level="DEBUG")
+        logging.info(proxy)
+        logging.info("Test scan running")
 
-    f = open("sites.json", "r")
-    sites = json.load(f)
-    for elem in sites:
-        print(elem["site"])
-        loginAndScan(proxy, elem["login"], elem["env"])
+        f = open("sites.json", "r")
+        sites = json.load(f)
+        for elem in sites:
+            logging.info("Starting scan for "+elem["site"])
+            testScan(proxy, elem["login"], elem["env"])
 
-    print("test complete")
+    else:
+        logging.basicConfig(level="INFO")
+        logging.info(proxy)
+   
+    
+        f = open("sites.json", "r")
+        sites = json.load(f)
+        for elem in sites:
+            logging.info("Starting scan for "+elem["site"])
+            loginAndScan(proxy, elem["login"], elem["env"])
+
+    logging.info("All test complete")
+
    
     
     
