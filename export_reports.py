@@ -22,35 +22,35 @@ def codedx_upload(project: str, filename: str):
 
 
 
-def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: str, defect_dojo_user: str, defect_dojo: str):  # pylint: disable=line-too-long
-    """
-    Upload Zap results in DefectDojo engagement
-    """
-    dojo = defectdojo.DefectDojoAPIv2(
-        defect_dojo, defect_dojo_key, defect_dojo_user, debug=False)
+# def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: str, defect_dojo_user: str, defect_dojo: str):  # pylint: disable=line-too-long
+#     """
+#     Upload Zap results in DefectDojo engagement
+#     """
+#     dojo = defectdojo.DefectDojoAPIv2(
+#         defect_dojo, defect_dojo_key, defect_dojo_user, debug=False)
 
-    absolute_path = os.path.abspath(zap_filename)
+#     absolute_path = os.path.abspath(zap_filename)
 
-    dojo_upload = dojo.upload_scan(engagement_id=engagement_id,
-                     scan_type="ZAP Scan",
-                     file=absolute_path,
-                     active=True,
-                     verified=False,
-                     close_old_findings=True,
-                     skip_duplicates=True,
-                     scan_date=str(datetime.today().strftime('%Y-%m-%d')),
-                     tags="Zap_scan")
-    logging.info("Dojo file upload: %s", dojo_upload)
+#     dojo_upload = dojo.upload_scan(engagement_id=engagement_id,
+#                      scan_type="ZAP Scan",
+#                      file=absolute_path,
+#                      active=True,
+#                      verified=False,
+#                      close_old_findings=True,
+#                      skip_duplicates=True,
+#                      scan_date=str(datetime.today().strftime('%Y-%m-%d')),
+#                      tags="Zap_scan")
+#     logging.info("Dojo file upload: %s", dojo_upload)
 
 
-def upload_gcs(bucket_name: str, scan_type: ScanType, filename: str):
-    """
-    Upload scans to a GCS bucket and return the path to the file in Cloud Console.
-    """
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    date = datetime.today().strftime("%Y%m%d")
-    path = f"{scan_type}-scans/{date}/{filename}"
-    blob = bucket.blob(path)
-    blob.upload_from_filename(filename)
-    return f"https://console.cloud.google.com/storage/browser/_details/{bucket_name}/{path}"
+# def upload_gcs(bucket_name: str, scan_type: ScanType, filename: str):
+#     """
+#     Upload scans to a GCS bucket and return the path to the file in Cloud Console.
+#     """
+#     storage_client = storage.Client()
+#     bucket = storage_client.bucket(bucket_name)
+#     date = datetime.today().strftime("%Y%m%d")
+#     path = f"{scan_type}-scans/{date}/{filename}"
+#     blob = bucket.blob(path)
+#     blob.upload_from_filename(filename)
+#     return f"https://console.cloud.google.com/storage/browser/_details/{bucket_name}/{path}"

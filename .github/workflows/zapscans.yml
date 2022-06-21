@@ -1,4 +1,4 @@
-name: Test Zap Scan
+name: Zap Scan
 
 #I do not think this needs to be here.
 on:
