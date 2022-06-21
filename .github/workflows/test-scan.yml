@@ -15,6 +15,7 @@ env:
   DDP_PASS: ${{secrets.DDP_PASS}}
   REPORT_DIR: ./tmp
   DEBUG: True
+  CODEDX_API_KEY: ${{secrets.CODEDX_API_KEY}}
 
 
 jobs:
