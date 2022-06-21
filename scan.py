@@ -217,8 +217,9 @@ if __name__ == "__main__":
     time.sleep(20)
 
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
-    if (os.getenv("DEBUG")=="True"):
-        load_dotenv("test.env")
+    if (os.getenv("DEBUG")==True):
+        #For local testing
+        #load_dotenv("test.env")
         logging.basicConfig(level="DEBUG")
         logging.info(proxy)
         logging.info("Test scan running")
