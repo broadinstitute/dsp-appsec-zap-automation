@@ -226,7 +226,7 @@ if __name__ == "__main__":
     #load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
      
-    if (os.getenv("DEBUG")=="True"):
+    if (os.getenv("DEBUG")==True):
        
         logging.basicConfig(level="DEBUG")
         logging.info(proxy)
