@@ -10,6 +10,8 @@ import importlib
 
 from dotenv import load_dotenv
 
+import export_reports
+
 
 
 def new_context(zap, domain):
@@ -82,10 +84,12 @@ def pullReport(zap, context, url, site):
     Directory must be local to ZAP.
     """
     template = "traditional-xml"
-    zap.reports.generate(title=site, template=template, contexts=context, sites=url, reportdir=os.getenv("REPORT_DIR"))
+    logging.info("arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
+    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url)
+    return returnvalue
 
 
-def loginAndScan(proxy, script, env):
+def loginAndScan(proxy, script, env, project):
     """
     Calls the login function for the site being scanned, 
     and then runs crawlers and scans against it.
@@ -153,13 +157,14 @@ def loginAndScan(proxy, script, env):
         time.sleep(5)
     logging.info("Active scanner complete")
 
-    pullReport(zap, context, "https://" + site, site)
+    reportFile = pullReport(zap, context, "https://" + site, site)
+    export_reports.codedx_upload(project,reportFile)
     zap.forcedUser.set_forced_user_mode_enabled(False)
 
     if authtype == "token":
         zap.script.disable(scriptname)
 
-def testScan(proxy, script, env):
+def testScan(proxy, script, env, project):
     """
     Calls the login function for the site being scanned, 
     and runs the spider. It does not run attacks or generate a report.
@@ -204,6 +209,9 @@ def testScan(proxy, script, env):
         time.sleep(5)
     logging.info("Spider complete")
 
+    reportFile = pullReport(zap, context, "https://" + site, site)
+    export_reports.codedx_upload(project,reportFile)
+
 
 
     zap.forcedUser.set_forced_user_mode_enabled(False)
@@ -216,19 +224,21 @@ if __name__ == "__main__":
     #If running locally, this can be commented out.
     time.sleep(20)
 
+    #For local testing
+    #load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
-    if (os.getenv("DEBUG")==True):
-        #For local testing
-        #load_dotenv("test.env")
-        logging.basicConfig(level="DEBUG")
+     
+    if (os.getenv("DEBUG")=="debug"):
+       
+        logging.basicConfig(level="INFO")
         logging.info(proxy)
         logging.info("Test scan running")
 
-        f = open("sites.json", "r")
+        f = open("test_sites.json", "r")
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            testScan(proxy, elem["login"], elem["env"])
+            testScan(proxy, elem["login"], elem["env"], elem["codedx"])
 
     else:
         logging.basicConfig(level="INFO")
@@ -239,7 +249,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            loginAndScan(proxy, elem["login"], elem["env"])
+            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"])
 
     logging.info("All test complete")
 
