@@ -88,7 +88,7 @@ def pullReport(zap, context, url, site):
     return returnvalue
 
 
-def loginAndScan(proxy, script, env):
+def loginAndScan(proxy, script, env, project):
     """
     Calls the login function for the site being scanned, 
     and then runs crawlers and scans against it.
@@ -227,7 +227,7 @@ if __name__ == "__main__":
     #load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
      
-    if (os.getenv("DEBUG")==True):
+    if (os.getenv("DEBUG")=="debug"):
        
         logging.basicConfig(level="INFO")
         logging.info(proxy)
@@ -248,7 +248,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            loginAndScan(proxy, elem["login"], elem["env"])
+            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"])
 
     logging.info("All test complete")
 
