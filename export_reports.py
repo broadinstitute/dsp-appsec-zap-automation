@@ -13,7 +13,7 @@ def codedx_upload(project: str, filename: str):
     Create CodeDx project if needed and trigger analysis on the uploaded file.
     """
     project = 111
-    codedx_url = "https://codedx.dsp-appsec-dev.broadinstitute.org/codedx/"
+    codedx_url = "http://codedx.codedx.svc.cluster.local/codedx"
     codedx_api_key = os.getenv("CODEDX_API_KEY")
     
     cdx = CodeDx(codedx_url, codedx_api_key)
