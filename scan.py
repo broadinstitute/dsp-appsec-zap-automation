@@ -84,6 +84,7 @@ def pullReport(zap, context, url, site):
     Directory must be local to ZAP.
     """
     template = "traditional-xml"
+    logging.info("arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url+", reportdir : "os.getenv("REPORT_DIR"))
     returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url, reportdir=os.getenv("REPORT_DIR"))
     return returnvalue
 
