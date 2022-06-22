@@ -1,2 +1,2 @@
-[
+[{"site":"dsm","env":"staging","login":"dsmlogin","codedx":"Pepper-DSM"},
     {"site":"ddp","env":"staging","login":"ddplogin","codedx":"angio-ddp"}]

@@ -234,7 +234,7 @@ if __name__ == "__main__":
         logging.info(proxy)
         logging.info("Test scan running")
 
-        f = open("sites.json", "r")
+        f = open("test_sites.json", "r")
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
