@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import json
 import os
 import logging
@@ -38,6 +38,7 @@ def defectdojo_upload(product_id: int, zap_filename: str, defect_dojo_key: str, 
     #lead_id is temp for dev right now. Will need to figure out how to properly pass it. 
     #name should be date based need to pull that from somewhere.
     date = datetime.today().strftime("%Y%m%d%H:%M")
+
     engagement=defectdojo.create_engagement( name=date, product_id=product_id, lead_id=14,target_start=datetime.today().strftime("%Y%m%d"),target_end=datetime.today().strftime("%Y%m%d"), status="In Progress", active='True')
 
     engagement_id=json.loads(engagement)["id"]
