@@ -1,3 +1,5 @@
+import datetime
+import json
 import os
 import logging
 from google.cloud import storage
@@ -23,7 +25,7 @@ def codedx_upload(project: str, filename: str):
 
 #What do I need here, I think what I need is file, key, product.
 
-def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: str, defect_dojo_user: str, defect_dojo: str):  # pylint: disable=line-too-long
+def defectdojo_upload(product_id: int, zap_filename: str, defect_dojo_key: str, defect_dojo_user: str, defect_dojo: str):  # pylint: disable=line-too-long
     """
     Upload Zap results in DefectDojo engagement
     """
@@ -33,7 +35,13 @@ def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: st
     absolute_path = os.path.abspath(zap_filename)
 
     #create engagement. 
+    #lead_id is temp for dev right now. Will need to figure out how to properly pass it. 
+    #name should be date based need to pull that from somewhere.
+    date = datetime.today().strftime("%Y%m%d%H:%M")
+    engagement=defectdojo.create_engagement( name=date, product_id=product_id, lead_id=14,target_start=datetime.today().strftime("%Y%m%d"),target_end=datetime.today().strftime("%Y%m%d"), status="In Progress", active='True')
 
+    engagement_id=json.loads(engagement)["id"]
+    
     dojo_upload = dojo.upload_scan(engagement_id=engagement_id,
                      scan_type="ZAP Scan",
                      file=absolute_path,
@@ -44,6 +52,8 @@ def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: st
                      scan_date=str(datetime.today().strftime('%Y-%m-%d')),
                      tags="Zap_scan")
     logging.info("Dojo file upload: %s", dojo_upload)
+
+    dojo.close_engagement(engagement_id)
 
 
 # def upload_gcs(bucket_name: str, scan_type: ScanType, filename: str):
