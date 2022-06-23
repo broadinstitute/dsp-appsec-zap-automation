@@ -39,7 +39,7 @@ def defectdojo_upload(product_id: int, zap_filename: str, defect_dojo_key: str, 
     #name should be date based need to pull that from somewhere.
     date = datetime.today().strftime("%Y%m%d%H:%M")
 
-    engagement=dojo.create_engagement( name=date, product_id=product_id, lead_id=14,target_start=datetime.today().strftime("%Y%m%d"),target_end=datetime.today().strftime("%Y%m%d"), status="In Progress", active='True')
+    engagement=dojo.create_engagement( name=date, product_id=product_id, lead_id=14,target_start=datetime.today().strftime("%Y-%m-%d"),target_end=datetime.today().strftime("%Y-%m-%d"), status="In Progress", active='True')
     print(engagement.data)
     engagement_id=json.loads(engagement.data)["id"]
     
