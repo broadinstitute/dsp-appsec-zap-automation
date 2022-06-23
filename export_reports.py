@@ -6,7 +6,7 @@ from google.cloud import storage
 
 
 from codedx_api.CodeDxAPI import CodeDx  # pylint: disable=import-error
-import defectdojo_api as defectdojo
+import defectdojo_apiv2 as defectdojo
 
 #tool for exporting reports to the correct location.
 
@@ -29,7 +29,7 @@ def defectdojo_upload(product_id: int, zap_filename: str, defect_dojo_key: str, 
     """
     Upload Zap results in DefectDojo engagement
     """
-    dojo = defectdojo.DefectDojoAPIv2(
+    dojo = defectdojo.DefectDojoAPI(
         defect_dojo, defect_dojo_key, defect_dojo_user, debug=False)
 
     absolute_path = os.path.abspath(zap_filename)
