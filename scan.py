@@ -231,9 +231,9 @@ def testScan(proxy, script, env, project, dojo_id):
         logging.info(status)
         time.sleep(5)
     logging.info("Active scanner complete")
-    
 
-    reportFile = pullReport(zap, context, "https://" + site, site)
+
+    reportFile = pullReport(zap, context, "https://" + domain, domain)
     export_reports.codedx_upload(project,reportFile)
     export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
 
