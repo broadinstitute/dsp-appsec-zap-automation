@@ -16,7 +16,6 @@ env:
   DEBUG: debug
   CODEDX_API_KEY: ${{secrets.CODEDX_API_KEY}}
   DOJO_USER: ${{secrets.DOJO_USER}}
-  DOJO_PASS: ${{secrets.DOJO_PASS}}
   DOJO_KEY: ${{secrets.DOJO_KEY}}
 
 
