@@ -164,7 +164,7 @@ def loginAndScan(proxy, script, env, project):
     if authtype == "token":
         zap.script.disable(scriptname)
 
-def testScan(proxy, script, env, project):
+def testScan(proxy, script, env, project, dojo_id):
     """
     Calls the login function for the site being scanned, 
     and runs the spider. It does not run attacks or generate a report.
@@ -209,9 +209,33 @@ def testScan(proxy, script, env, project):
         time.sleep(5)
     logging.info("Spider complete")
 
+    #run ajax spider
+    #this needs to be configurable.
+    zap.ajaxSpider.set_option_max_duration(4)
+    zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
+    time.sleep(10)
+    count=0
+    while (zap.ajaxSpider.status == "running"):
+        logging.debug("Ajax Spider still running")
+        time.sleep(10)
+        count=count+1
+        if count > 24:
+            zap.ajaxSpider.stop()
+    logging.info("Ajax Spider complete")
+
+    # #Run active scan as the authenticated user.
+    zap.ascan.scan_as_user(contextid=contextID, userid=userId)
+    time.sleep(60)
+    while (zap.ascan.status() != "100"):
+        status=zap.ascan.status()
+        logging.info(status)
+        time.sleep(5)
+    logging.info("Active scanner complete")
+    
+
     reportFile = pullReport(zap, context, "https://" + site, site)
     export_reports.codedx_upload(project,reportFile)
-    export_reports.defectdojo_upload(216, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+    export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
 
 
 
@@ -239,7 +263,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            testScan(proxy, elem["login"], elem["env"], elem["codedx"])
+            testScan(proxy, elem["login"], elem["env"], elem["codedx"],elem["dojo_id"])
 
     else:
         logging.basicConfig(level="INFO")
