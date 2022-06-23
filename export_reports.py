@@ -6,7 +6,7 @@ from google.cloud import storage
 
 
 from codedx_api.CodeDxAPI import CodeDx  # pylint: disable=import-error
-import defectdojo_apiv2 as defectdojo
+import defectdojo_api.DefectDojoAPIv2 as defectdojo
 
 #tool for exporting reports to the correct location.
 
