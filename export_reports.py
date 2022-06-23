@@ -12,7 +12,7 @@ def codedx_upload(project: str, filename: str):
     """
     Create CodeDx project if needed and trigger analysis on the uploaded file.
     """
-    
+
     codedx_url = "http://codedx.codedx.svc.cluster.local/codedx"
     codedx_api_key = os.getenv("CODEDX_API_KEY")
     
@@ -21,26 +21,29 @@ def codedx_upload(project: str, filename: str):
     cdx.analyze(project, filename)
 
 
+#What do I need here, I think what I need is file, key, product.
 
-# def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: str, defect_dojo_user: str, defect_dojo: str):  # pylint: disable=line-too-long
-#     """
-#     Upload Zap results in DefectDojo engagement
-#     """
-#     dojo = defectdojo.DefectDojoAPIv2(
-#         defect_dojo, defect_dojo_key, defect_dojo_user, debug=False)
+def defectdojo_upload(engagement_id: int, zap_filename: str, defect_dojo_key: str, defect_dojo_user: str, defect_dojo: str):  # pylint: disable=line-too-long
+    """
+    Upload Zap results in DefectDojo engagement
+    """
+    dojo = defectdojo.DefectDojoAPIv2(
+        defect_dojo, defect_dojo_key, defect_dojo_user, debug=False)
 
-#     absolute_path = os.path.abspath(zap_filename)
+    absolute_path = os.path.abspath(zap_filename)
 
-#     dojo_upload = dojo.upload_scan(engagement_id=engagement_id,
-#                      scan_type="ZAP Scan",
-#                      file=absolute_path,
-#                      active=True,
-#                      verified=False,
-#                      close_old_findings=True,
-#                      skip_duplicates=True,
-#                      scan_date=str(datetime.today().strftime('%Y-%m-%d')),
-#                      tags="Zap_scan")
-#     logging.info("Dojo file upload: %s", dojo_upload)
+    #create engagement. 
+
+    dojo_upload = dojo.upload_scan(engagement_id=engagement_id,
+                     scan_type="ZAP Scan",
+                     file=absolute_path,
+                     active=True,
+                     verified=False,
+                     close_old_findings=True,
+                     skip_duplicates=True,
+                     scan_date=str(datetime.today().strftime('%Y-%m-%d')),
+                     tags="Zap_scan")
+    logging.info("Dojo file upload: %s", dojo_upload)
 
 
 # def upload_gcs(bucket_name: str, scan_type: ScanType, filename: str):
