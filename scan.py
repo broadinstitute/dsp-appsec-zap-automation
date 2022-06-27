@@ -89,7 +89,7 @@ def pullReport(zap, context, url, site):
     return returnvalue
 
 
-def loginAndScan(proxy, script, env, project):
+def loginAndScan(proxy, script, env, project, dojo_id):
     """
     Calls the login function for the site being scanned, 
     and then runs crawlers and scans against it.
@@ -159,6 +159,8 @@ def loginAndScan(proxy, script, env, project):
 
     reportFile = pullReport(zap, context, "https://" + site, site)
     export_reports.codedx_upload(project,reportFile)
+    export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+
     zap.forcedUser.set_forced_user_mode_enabled(False)
 
     if authtype == "token":
@@ -209,28 +211,6 @@ def testScan(proxy, script, env, project, dojo_id):
         time.sleep(5)
     logging.info("Spider complete")
 
-    #run ajax spider
-    #this needs to be configurable.
-    zap.ajaxSpider.set_option_max_duration(4)
-    zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
-    time.sleep(10)
-    count=0
-    while (zap.ajaxSpider.status == "running"):
-        logging.debug("Ajax Spider still running")
-        time.sleep(10)
-        count=count+1
-        if count > 24:
-            zap.ajaxSpider.stop()
-    logging.info("Ajax Spider complete")
-
-    # #Run active scan as the authenticated user.
-    zap.ascan.scan_as_user(contextid=contextID, userid=userId)
-    time.sleep(60)
-    while (zap.ascan.status() != "100"):
-        status=zap.ascan.status()
-        logging.info(status)
-        time.sleep(5)
-    logging.info("Active scanner complete")
 
 
     reportFile = pullReport(zap, context, "https://" + domain, domain)
@@ -274,7 +254,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"])
+            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"],elem["dojo_id"])
 
     logging.info("All test complete")
 
