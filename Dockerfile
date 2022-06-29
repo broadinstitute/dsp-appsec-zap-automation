@@ -1,12 +1,14 @@
 FROM owasp/zap2docker-stable
 
+ARG REPORT_DIR
+
 COPY . /app
 WORKDIR /app
 
 USER root
 
 #setup report directory
-RUN mkdir $REPORT_DIR
+RUN mkdir ${REPORT_DIR}
 #install python
 RUN apt-get install -y python3.8
 
