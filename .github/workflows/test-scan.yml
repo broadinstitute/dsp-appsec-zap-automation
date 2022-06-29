@@ -1,6 +1,5 @@
 name: Test Zap Scan
 
-#I do not think this needs to be here.
 on:
   workflow_dispatch:
 
