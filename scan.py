@@ -89,7 +89,7 @@ def pullReport(zap, context, url, site):
     return returnvalue
 
 
-def loginAndScan(proxy, script, env, project):
+def loginAndScan(proxy, script, env, project, dojo_id):
     """
     Calls the login function for the site being scanned, 
     and then runs crawlers and scans against it.
@@ -159,12 +159,14 @@ def loginAndScan(proxy, script, env, project):
 
     reportFile = pullReport(zap, context, "https://" + site, site)
     export_reports.codedx_upload(project,reportFile)
+    export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+
     zap.forcedUser.set_forced_user_mode_enabled(False)
 
     if authtype == "token":
         zap.script.disable(scriptname)
 
-def testScan(proxy, script, env, project):
+def testScan(proxy, script, env, project, dojo_id):
     """
     Calls the login function for the site being scanned, 
     and runs the spider. It does not run attacks or generate a report.
@@ -209,8 +211,11 @@ def testScan(proxy, script, env, project):
         time.sleep(5)
     logging.info("Spider complete")
 
-    reportFile = pullReport(zap, context, "https://" + site, site)
+
+
+    reportFile = pullReport(zap, context, "https://" + domain, domain)
     export_reports.codedx_upload(project,reportFile)
+    export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
 
 
 
@@ -238,7 +243,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            testScan(proxy, elem["login"], elem["env"], elem["codedx"])
+            testScan(proxy, elem["login"], elem["env"], elem["codedx"],elem["dojo_id"])
 
     else:
         logging.basicConfig(level="INFO")
@@ -249,7 +254,7 @@ if __name__ == "__main__":
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"])
+            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"],elem["dojo_id"])
 
     logging.info("All test complete")
 

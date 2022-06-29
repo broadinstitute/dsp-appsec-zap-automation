@@ -20,7 +20,7 @@ env:
 
 jobs:
   scan:
-    runs-on: self-hosted
+    runs-on: [self-hosted, prod]
     
 
     steps:
