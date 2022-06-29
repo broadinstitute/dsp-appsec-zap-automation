@@ -32,5 +32,5 @@ jobs:
         run: docker run --rm -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY bundledzap ./launcher.sh
       - name: Export
         run: |
-        docker cp /tmp/reports/ ./reports
-        gsutil cp -r ./reports gs://dsp-appsec-authscans-test/reports/
+          docker cp /tmp/reports/ ./reports
+          gsutil cp -r ./reports gs://dsp-appsec-authscans-test/reports/
