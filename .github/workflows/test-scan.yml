@@ -29,8 +29,9 @@ jobs:
       - name: Build
         run: docker build --build-arg REPORT_DIR=${REPORT_DIR} . -t bundledzap
       - name: Test
-        run: docker run -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY bundledzap ./launcher.sh
+        run: |
+          mkdir tmp/reports
+          docker run -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY -v ./tmp/reports:/tmp/reports bundledzap ./launcher.sh
       - name: Export
         run: |
-          docker cp bundledzap:/tmp/reports/ ./reports
-          gsutil cp -r ./reports gs://dsp-appsec-authscans-test/reports/
+          gsutil cp -r ./tmp/reports gs://dsp-appsec-authscans-test/reports/
