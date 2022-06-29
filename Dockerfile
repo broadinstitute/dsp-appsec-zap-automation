@@ -5,7 +5,8 @@ WORKDIR /app
 
 USER root
 
-
+#setup report directory
+RUN mkdir ${REPORT_DIR}
 #install python
 RUN apt-get install -y python3.8
 

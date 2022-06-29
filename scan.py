@@ -85,7 +85,7 @@ def pullReport(zap, context, url, site):
     """
     template = "traditional-xml"
     logging.info("arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
-    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url)
+    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= os.getenv("REPORT_DIR"))
     return returnvalue
 
 
