@@ -85,7 +85,7 @@ def pullReport(zap, context, url, site):
     """
     template = "traditional-xml"
     logging.info("arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
-    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url)
+    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= os.getenv("REPORT_DIR"))
     return returnvalue
 
 
@@ -213,9 +213,9 @@ def testScan(proxy, script, env, project, dojo_id):
 
 
 
-    reportFile = pullReport(zap, context, "https://" + domain, domain)
-    export_reports.codedx_upload(project,reportFile)
-    export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+    # reportFile = pullReport(zap, context, "https://" + domain, domain)
+    # export_reports.codedx_upload(project,reportFile)
+    # export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
 
 
 
