@@ -1,4 +1,4 @@
 test.env
 dsp-appsec-dev-f9c42bd29bee.json
 scan_local.py
-.github/workflows/test-scan.yml
+./.github/workflows/test-scan.yml
