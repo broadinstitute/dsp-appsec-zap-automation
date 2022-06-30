@@ -32,8 +32,3 @@ jobs:
         run: |
           mkdir tmp/reports
           docker run -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY -v "$(pwd)"/tmp/reports:/tmp/reports bundledzap ./launcher.sh
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v0
-      - name: Export
-        run: |
-          gsutil cp -r tmp/reports gs://dsp-appsec-authscans-test/reports/
