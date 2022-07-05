@@ -31,7 +31,7 @@ jobs:
       - name: Test
         run: |
           mkdir tmp/reports
-          docker run -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY -v "$(pwd)"/tmp/reports:${REPORT_DIR} bundledzap ./launcher.sh
+          docker run -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e DSM_PASS -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY -v "$(pwd)"/tmp/reports:${REPORT_DIR} bundledzap ./launcher.sh
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
       - name: Export
