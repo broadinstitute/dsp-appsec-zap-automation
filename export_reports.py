@@ -38,8 +38,10 @@ def defectdojo_upload(product_id: int, zap_filename: str, defect_dojo_key: str, 
     #lead_id is temp for dev right now. Will need to figure out how to properly pass it. 
     #name should be date based need to pull that from somewhere.
     date = datetime.today().strftime("%Y%m%d%H:%M")
+    logging.info("product id for Dojo is "+product_id)
 
-    engagement=dojo.create_engagement( name=date, product_id=product_id, lead_id=14,target_start=datetime.today().strftime("%Y-%m-%d"),target_end=datetime.today().strftime("%Y-%m-%d"), status="In Progress", active='True')
+    #TO DO the lead_id needs to be set dynamically, this is the user id for the api user.
+    engagement=dojo.create_engagement( name=date, product_id=product_id, lead_id=16,target_start=datetime.today().strftime("%Y-%m-%d"),target_end=datetime.today().strftime("%Y-%m-%d"), status="In Progress", active='True')
     print(engagement.data)
     engagement_id=engagement.data["id"]
     
