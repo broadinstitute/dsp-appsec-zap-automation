@@ -17,6 +17,9 @@ env:
   DDP_PASS: ${{secrets.DDP_PASS}}
   DEBUG: false
   REPORT_DIR: /tmp/reports
+  CODEDX_API_KEY: ${{secrets.CODEDX_API_KEY}}
+  DOJO_USER: ${{secrets.DOJO_USER}}
+  DOJO_KEY: ${{secrets.DOJO_KEY}}
 
 
 jobs:
