@@ -21,7 +21,7 @@ env:
 
 jobs:
   scan:
-    runs-on: [self-hosted, dev]
+    runs-on: [self-hosted, dev-runner]
     
 
     steps:
