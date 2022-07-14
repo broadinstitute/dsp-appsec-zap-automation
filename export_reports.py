@@ -1,5 +1,4 @@
 from datetime import datetime
-import json
 import os
 import logging
 from google.cloud import storage
@@ -10,13 +9,13 @@ import defectdojo_api.defectdojo_apiv2 as defectdojo
 
 #tool for exporting reports to the correct location.
 
-def codedx_upload(project: str, filename: str):
+def codedx_upload(project: str, filename: str, env: str):
     """
     Create CodeDx project if needed and trigger analysis on the uploaded file.
     """
 
     codedx_url = "http://codedx.codedx.svc.cluster.local/codedx"
-    codedx_api_key = os.getenv("CODEDX_API_KEY")
+    codedx_api_key = os.getenv("CODEDX_API_KEY_"+env)
     
     cdx = CodeDx(codedx_url, codedx_api_key)
 
