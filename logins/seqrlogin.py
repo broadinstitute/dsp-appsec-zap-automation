@@ -51,17 +51,19 @@ def login(proxy, env, site):
         try:
             driver.get(url)
             driver.add_cookie({"name": "accepted_cookies", "value": "true"})
+            time.sleep(5)
             driver.get(url)
             expected_conditions.title_is("seqr: Dashboard")
             driver.find_element(by=By.LINK_TEXT, value="Log in").click()
             #next page. should be google login.
             expected_conditions.title_is("Sign in - Google Accounts")
-            time.sleep(5)
+            time.sleep(4)
             
             driver.find_element(by=By.ID, value="identifierId").send_keys(os.getenv("SEQR_USER"))
+            time.sleep(3)
             driver.find_element(by=By.ID, value="identifierNext").click()
             #what in the what is the double parens.
-            time.sleep(30)
+            time.sleep(3)
             try:
                 driver.findElement(By.xpath("//*[text()='This browser or app may not be secure']"))
                 
