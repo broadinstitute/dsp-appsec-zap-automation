@@ -1,3 +1,4 @@
+import logging
 import time
 from dotenv import load_dotenv
 from selenium.webdriver.chrome.options import Options
@@ -15,9 +16,9 @@ def set_chrome_options(proxy) -> None:
     """
     chrome_options = Options()
     #When using this in a container, uncomment the lines below
-    # chrome_options.add_argument("--headless")
-    # chrome_options.add_argument("--no-sandbox")
-    # chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument('--proxy-server='+ proxy)
     chrome_options.add_argument('--allow-insecure-localhost')
     chrome_options.add_argument('--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36"')
@@ -65,19 +66,20 @@ def login(proxy, env, site):
                 driver.findElement(By.xpath("//*[text()='This browser or app may not be secure']"))
                 
             except:
-                print("failed to find text")
+                logging.info("SEQR user was not flagged as using an insecure browser")
             else:
-                print("browser is flagged as bad by the googs")
+                logging.error("Google flagged the browser as insecure, scan will not continue.")
                 break
-            # try:
-            #     driver.find_element(by=By.ID, value="identifierId")                
-            # except:
-            #     print("failed to find username input")
-            # else:
-            #     print("browser is throwing a captcha")
+            try:
+                driver.find_element(by=By.ID, value="identifierId")                
+            except:
+                logging.info("Login will continue to password form. Google is not presenting a captcha")
+            else:
+                logging.error("Google is presenting a captcha, and scanning cannot continue")
+                break
             #     #domstring=driver.execute_script("var xmlString = new XMLSerializer().serializeToString( document ); return xmlString;")
             #     #print(domstring)
-            #     break
+
             driver.implicitly_wait(3)
             expected_conditions.presence_of_element_located((By.NAME, "password"))
             driver.implicitly_wait(6)
@@ -93,9 +95,9 @@ def login(proxy, env, site):
 
 
         except Exception as err:
-            print("Exception occurred: {0}".format(err))
+            logging.error("Exception occurred: {0}".format(err))
         else:
-            print("logged in")
+            logging.info("SEQR login passed. User is now logged in")
             logged_in=True
             break
     driver.close()
