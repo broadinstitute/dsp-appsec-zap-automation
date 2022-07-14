@@ -21,7 +21,7 @@ def set_chrome_options(proxy) -> None:
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument('--proxy-server='+ proxy)
     chrome_options.add_argument('--allow-insecure-localhost')
-    chrome_options.add_argument('--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.0.0 Safari/537.36"')
+    chrome_options.add_argument('--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"')
     chrome_options.add_argument('--window-size=1300,9000')
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument("--lang=en")
