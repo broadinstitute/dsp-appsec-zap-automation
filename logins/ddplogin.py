@@ -1,3 +1,4 @@
+import logging
 import os
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
@@ -78,9 +79,9 @@ def login(proxy, env,site):
             driver.get(url+"/dashboard")
             time.sleep(2)
         except Exception as err:
-            print("Exception occurred: {0}".format(err))
+            logging.error("Exception occurred: {0}".format(err))
         else:
-            print("logged in")
+            logging.info("DDP user has logged in")
             logged_in=True
             break
 

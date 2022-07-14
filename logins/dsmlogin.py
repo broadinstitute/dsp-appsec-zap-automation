@@ -1,3 +1,5 @@
+
+import logging
 import os
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
@@ -29,6 +31,7 @@ def login(proxy, env, site):
     Sets the bearer token value to the sessid cookie. 
     """
     
+    #TODO DSM login and UI have changed. Script needs to be updated.
     caps = webdriver.DesiredCapabilities.CHROME.copy() 
     caps['acceptInsecureCerts'] = True
     driver = webdriver.Chrome(options=set_chrome_options(proxy), desired_capabilities=caps)
@@ -46,7 +49,7 @@ def login(proxy, env, site):
             driver.find_element(by=By.LINK_TEXT,value="Log In").click()
             #
             driver.implicitly_wait(3)
-            print("found login form")
+            logging.info("Chrome driver found DSM login form")
             driver.implicitly_wait(10)
             expected_conditions.presence_of_element_located((By.NAME,"email"))
             driver.find_element(by=By.NAME,value="email").send_keys(os.getenv("DSM_USER"))
@@ -55,14 +58,14 @@ def login(proxy, env, site):
             driver.implicitly_wait(10)
             expected_conditions.presence_of_element_located((By.LINK_TEXT,"Samples"))
             driver.find_element(by=By.LINK_TEXT, value="Samples").click()
-            print("logged in")
+            logging.info("Chrome Driver found link text 'Samples' after login.")
             token=driver.execute_script("return localStorage.getItem(\"dsm_token\")")
             driver.execute_script('document.cookie="sessid='+token+'"')
             driver.get(url+"/userSettings")
         except Exception as err:
-            print("Exception occurred: {0}".format(err))
+            logging.error("Exception occurred: {0}".format(err))
         else:
-            print("logged in")
+            logging.info("Login script for DSM passed. User is now logged in.")
             logged_in=True
             break
     driver.close()
