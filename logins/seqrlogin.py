@@ -16,12 +16,12 @@ def set_chrome_options(proxy) -> None:
     """
     chrome_options = Options()
     #When using this in a container, uncomment the lines below
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
+    # chrome_options.add_argument("--headless")
+    # chrome_options.add_argument("--no-sandbox")
+    # chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument('--proxy-server='+ proxy)
     chrome_options.add_argument('--allow-insecure-localhost')
-    chrome_options.add_argument('--user-agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"')
+    chrome_options.add_argument('--user-agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36')
     chrome_options.add_argument('--window-size=1300,9000')
     chrome_options.add_argument("--start-maximized")
     chrome_options.add_argument("--lang=en")
@@ -40,6 +40,7 @@ def login(proxy, env, site):
     #zap.httpsessions.add_default_session_token(cookieName)
 
 
+
     domain="seqr-"+env+".broadinstitute.org:443"
     url="https://"+domain
     authtype="cookie"
@@ -49,6 +50,7 @@ def login(proxy, env, site):
 
     for attempt in range(max_retries):
         try:
+
             driver.get(url)
             driver.add_cookie({"name": "accepted_cookies", "value": "true"})
             time.sleep(5)
@@ -58,12 +60,12 @@ def login(proxy, env, site):
             #next page. should be google login.
             expected_conditions.title_is("Sign in - Google Accounts")
             time.sleep(4)
-            
+            time.sleep(1)
             driver.find_element(by=By.ID, value="identifierId").send_keys(os.getenv("SEQR_USER"))
             time.sleep(3)
             driver.find_element(by=By.ID, value="identifierNext").click()
             #what in the what is the double parens.
-            time.sleep(3)
+            time.sleep(30)
             try:
                 driver.findElement(By.xpath("//*[text()='This browser or app may not be secure']"))
                 
@@ -73,12 +75,12 @@ def login(proxy, env, site):
                 logging.error("Google flagged the browser as insecure, scan will not continue.")
                 break
             try:
-                driver.find_element(by=By.ID, value="identifierId")                
+                driver.find_element(by=By.ID, value="password")                
             except:
-                logging.info("Login will continue to password form. Google is not presenting a captcha")
-            else:
                 logging.error("Google is presenting a captcha, and scanning cannot continue")
                 break
+            else:
+                logging.info("Login will continue to password form. Google is not presenting a captcha")
             #     #domstring=driver.execute_script("var xmlString = new XMLSerializer().serializeToString( document ); return xmlString;")
             #     #print(domstring)
 
@@ -108,5 +110,5 @@ def login(proxy, env, site):
 
 if __name__ == "__main__":
     load_dotenv("../test.env")
-
+    logging.basicConfig(level="INFO")
     login(os.getenv("PROXY")+":"+os.getenv("PORT"),"dev","seqr")
