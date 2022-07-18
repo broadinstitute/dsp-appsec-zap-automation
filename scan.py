@@ -215,7 +215,7 @@ def testScan(proxy, script, env, project, dojo_id):
 
     # reportFile = pullReport(zap, context, "https://" + domain, domain)
     # export_reports.codedx_upload(project,reportFile)
-    # export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+    # export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY_DEV"), os.getenv("DOJO_USER_DEV"),"http://defectdojo.defectdojo.svc.cluster.local")
 
 
 
