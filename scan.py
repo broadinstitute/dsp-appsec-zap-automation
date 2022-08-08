@@ -122,7 +122,9 @@ def loginAndScan(proxy, script, env, project, dojo_id):
         userName, userId=cookieauth(zap, contextID, site)
     elif authtype == "token":
         userName, userId, scriptname=tokenauth(zap, contextID, site)
-   
+    
+    #site has the port appended to it, using it like that can cause an issue with report generation
+    site=domain
     #passive scan
     zap.pscan.enable_all_scanners()
    
@@ -199,7 +201,9 @@ def testScan(proxy, script, env, project, dojo_id):
         userName, userId=cookieauth(zap, contextID, site)
     elif authtype == "token":
         userName, userId, scriptname=tokenauth(zap, contextID, site)
-   
+    
+    #site has the port appended to it, using it like that can cause an issue with report generation
+    site=domain
     #passive scan
     zap.pscan.enable_all_scanners()
    
