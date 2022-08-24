@@ -160,9 +160,14 @@ def loginAndScan(proxy, script, env, project, dojo_id):
     logging.info("Active scanner complete")
 
     reportFile = pullReport(zap, context, "https://" + site, site)
-    export_reports.codedx_upload(project,reportFile)
-    export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
-
+    try:
+        export_reports.codedx_upload(project,reportFile)
+    except Exception:
+        logging.error("Failed to import profject "+ project +" to Codedx")
+    try:
+        export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+    except Exception:
+        logging.error("Failed to import project "+ project +" to Defect Dojo.")
     zap.forcedUser.set_forced_user_mode_enabled(False)
 
     if authtype == "token":
