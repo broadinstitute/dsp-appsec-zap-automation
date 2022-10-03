@@ -1,8 +1,10 @@
 
 import logging
 import os
+import time
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
+from dotenv import load_dotenv
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.common.by import By
@@ -46,22 +48,26 @@ def login(proxy, env, site):
     for attempt in range(max_retries):
         try:
             driver.get(url)
-            driver.find_element(by=By.LINK_TEXT,value="Log In").click()
             #
             driver.implicitly_wait(3)
             logging.info("Chrome driver found DSM login form")
             driver.implicitly_wait(10)
+            time.sleep(5)
             expected_conditions.presence_of_element_located((By.NAME,"email"))
             driver.find_element(by=By.NAME,value="email").send_keys(os.getenv("DSM_USER"))
             driver.find_element(by=By.NAME, value="password").send_keys(os.getenv("DSM_PASS"))
             driver.find_element(by=By.CLASS_NAME, value="auth0-lock-submit").click()
-            driver.implicitly_wait(10)
-            expected_conditions.presence_of_element_located((By.LINK_TEXT,"Samples"))
-            driver.find_element(by=By.LINK_TEXT, value="Samples").click()
-            logging.info("Chrome Driver found link text 'Samples' after login.")
+            time.sleep(5)
+            driver.execute_script("localStorage.setItem('selectedRealm', 'angio');")
+            time.sleep(5)
+            logging.info("Load angio study page.")
+            driver.get(url+'/angio')
+            time.sleep(5)
+            logging.info("Pull token from local storage")
             token=driver.execute_script("return localStorage.getItem(\"dsm_token\")")
+            logging.info("set cookie")
             driver.execute_script('document.cookie="sessid='+token+'"')
-            driver.get(url+"/userSettings")
+            driver.get(url+"/angio/userSettings")
         except Exception as err:
             logging.error("Exception occurred: {0}".format(err))
         else:
@@ -71,3 +77,7 @@ def login(proxy, env, site):
     driver.close()
     return domain, authtype, logged_in
 
+if __name__ == "__main__":
+    load_dotenv("../test.env")
+    logging.basicConfig(level="INFO")
+    login(os.getenv("PROXY")+":"+os.getenv("PORT"),"staging","dsm")
