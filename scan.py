@@ -84,12 +84,14 @@ def pullReport(zap, context, url, site):
     Directory must be local to ZAP.
     """
     template = "traditional-xml"
-    logging.info("arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
-    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= os.getenv("REPORT_DIR"))
+    reportDir = os.getenv("REPORT_DIR")+'/'+site
+    logging.info("Pulling report with following arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
+    os.mkdir(reportDir)
+    returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= reportDir)
     return returnvalue
 
 
-def loginAndScan(proxy, script, env, project, dojo_id):
+def loginAndScan(zap, proxy, script, env):
     """
     Calls the login function for the site being scanned, 
     and then runs crawlers and scans against it.
@@ -98,7 +100,7 @@ def loginAndScan(proxy, script, env, project, dojo_id):
     login = getattr(module, "login")
 
     #all sites will need to connect to zap and create a context.
-    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    #zap = ZAPv2(proxies={"http": proxy, "https": proxy})
     context = new_context(zap, script)
     contextID = zap.context.context(context)["id"]
     zap.authentication.set_authentication_method(contextID,"manualAuthentication")
@@ -106,7 +108,7 @@ def loginAndScan(proxy, script, env, project, dojo_id):
     site, authtype, logged_in=login(proxy,env,script)
     if logged_in == False:
         logging.info("Failed to login, no scan will be performed for "+script)
-        return
+        return "", ""
 
     logging.info("site is:"+ site)
     domain = site.split(":")[0]
@@ -156,22 +158,24 @@ def loginAndScan(proxy, script, env, project, dojo_id):
     while (zap.ascan.status() != "100"):
         status=zap.ascan.status()
         logging.info(status)
-        time.sleep(5)
+        time.sleep(10)
     logging.info("Active scanner complete")
 
-    reportFile = pullReport(zap, context, "https://" + site, site)
-    try:
-        export_reports.codedx_upload(project,reportFile)
-    except Exception:
-        logging.error("Failed to import profject "+ project +" to Codedx")
-    try:
-        export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
-    except Exception:
-        logging.error("Failed to import project "+ project +" to Defect Dojo.")
-    zap.forcedUser.set_forced_user_mode_enabled(False)
+    
+    # try:
+    #     export_reports.codedx_upload(project,reportFile)
+    # except Exception:
+    #     logging.error("Failed to import profject "+ project +" to Codedx")
+    # try:
+    #     export_reports.defectdojo_upload(dojo_id, reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+    # except Exception:
+    #     logging.error("Failed to import project "+ project +" to Defect Dojo.")
+    
+    
 
     if authtype == "token":
         zap.script.disable(scriptname)
+    return context,site
 
 def testScan(proxy, script, env, project, dojo_id):
     """
@@ -236,7 +240,7 @@ def testScan(proxy, script, env, project, dojo_id):
 if __name__ == "__main__":
     #attempt to wait to initialize zap
     #If running locally, this can be commented out.
-    time.sleep(20)
+    time.sleep(40)
 
     #For local testing
     #load_dotenv("test.env")
@@ -258,14 +262,17 @@ if __name__ == "__main__":
         logging.basicConfig(level="INFO")
         logging.info(proxy)
    
-    
+        zap = ZAPv2(proxies={"http": proxy, "https": proxy})
         f = open("sites.json", "r")
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            loginAndScan(proxy, elem["login"], elem["env"], elem["codedx"],elem["dojo_id"])
+            context,site = loginAndScan(zap, proxy, elem["login"], elem["env"])
+            if site is not "":
+                reportFile = pullReport(zap, context, "https://" + site, elem["site"])
+            zap.forcedUser.set_forced_user_mode_enabled(False)
 
-    logging.info("All test complete")
+    logging.info("All tests complete")
 
    
     

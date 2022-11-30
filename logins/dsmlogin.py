@@ -57,6 +57,7 @@ def login(proxy, env, site):
             driver.find_element(by=By.NAME,value="email").send_keys(os.getenv("DSM_USER"))
             driver.find_element(by=By.NAME, value="password").send_keys(os.getenv("DSM_PASS"))
             driver.find_element(by=By.CLASS_NAME, value="auth0-lock-submit").click()
+            logging.info("Filled in login form for DSM")
             time.sleep(5)
             driver.execute_script("localStorage.setItem('selectedRealm', 'angio');")
             time.sleep(5)
@@ -69,7 +70,7 @@ def login(proxy, env, site):
             driver.execute_script('document.cookie="sessid='+token+'"')
             driver.get(url+"/angio/userSettings")
         except Exception as err:
-            logging.error("Exception occurred: {0}".format(err))
+            logging.error("Exception occurred while attempting to login to DSM: {0}".format(err))
         else:
             logging.info("Login script for DSM passed. User is now logged in.")
             logged_in=True
