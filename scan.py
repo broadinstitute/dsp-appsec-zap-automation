@@ -108,7 +108,7 @@ def loginAndScan(zap, proxy, script, env):
     site, authtype, logged_in=login(proxy,env,script)
     if logged_in == False:
         logging.info("Failed to login, no scan will be performed for "+script)
-        return
+        return "", ""
 
     logging.info("site is:"+ site)
     domain = site.split(":")[0]
@@ -268,7 +268,8 @@ if __name__ == "__main__":
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
             context,site = loginAndScan(zap, proxy, elem["login"], elem["env"])
-            reportFile = pullReport(zap, context, "https://" + site, elem["site"])
+            if site is not "":
+                reportFile = pullReport(zap, context, "https://" + site, elem["site"])
             zap.forcedUser.set_forced_user_mode_enabled(False)
 
     logging.info("All tests complete")
