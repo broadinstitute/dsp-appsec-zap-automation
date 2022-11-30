@@ -1,6 +1,6 @@
 name: Zap Scan
 
-#I do not think this needs to be here.
+
 on:
   schedule:
   - cron: "0 0 1 * *"
@@ -37,6 +37,10 @@ jobs:
           docker run -e SEQR_USER -e SEQR_PASS -e DOJO_USER -e DOJO_KEY -e DSM_USER -e PROXY -e PORT -e DDP_USER -e DDP_PASS -e REPORT_DIR -e DEBUG -e CODEDX_API_KEY -v "$(pwd)"/tmp/reports:${REPORT_DIR} bundledzap ./launcher.sh
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v0
-      - name: Export
+      - name: Export to GCS
         run: |
           gsutil cp -r tmp/reports gs://dsp-appsec-infra-prod-auto-zap-reports/reports/
+      - name: Export to CodeDx and Dojo
+        run: |
+          pip install -r requirements.txt
+          python export_reports.py

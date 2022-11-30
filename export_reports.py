@@ -1,4 +1,5 @@
 from datetime import datetime
+import json
 import os
 import logging
 from google.cloud import storage
@@ -56,3 +57,25 @@ def defectdojo_upload(product_id: int, zap_filename: str, defect_dojo_key: str, 
     logging.info("Dojo file upload: %s", dojo_upload)
 
     dojo.close_engagement(engagement_id)
+
+if __name__ == "__main__":
+
+    f = open("sites.json", "r")
+    sites = json.load(f)
+    
+    for elem in sites:
+        reportFile = ""
+        logging.info("Starting report upload for "+elem["site"])
+        files = os.listdir(os.getenv("REPORT_DIR")+"/"+elem["site"])
+        for file in files:
+            if file[-4:] == ".xml" and "ZAP-report" in file:
+                reportFile = file
+
+        try:
+            codedx_upload(elem["codedx"],reportFile)
+        except Exception:
+            logging.error("Failed to import profject "+ elem["codedx"] +" to Codedx")
+        try:
+            defectdojo_upload(elem["dojo_id"], reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+        except Exception:
+            logging.error("Failed to import project "+ elem["codedx"] +" to Defect Dojo.")
