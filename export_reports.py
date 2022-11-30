@@ -74,13 +74,13 @@ if __name__ == "__main__":
                     reportFile = file
         
 
-            # try:
-            #     codedx_upload(elem["codedx"],reportFile)
-            # except Exception:
-            #     logging.error("Failed to import profject "+ elem["codedx"] +" to Codedx")
-            # try:
-            #     defectdojo_upload(elem["dojo_id"], reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
-            # except Exception:
-            #     logging.error("Failed to import project "+ elem["codedx"] +" to Defect Dojo.")
+            try:
+                codedx_upload(elem["codedx"],reportFile)
+            except Exception:
+                logging.error("Failed to import profject "+ elem["codedx"] +" to Codedx")
+            try:
+                defectdojo_upload(elem["dojo_id"], reportFile, os.getenv("DOJO_KEY"), os.getenv("DOJO_USER"),"http://defectdojo.defectdojo.svc.cluster.local")
+            except Exception:
+                logging.error("Failed to import project "+ elem["codedx"] +" to Defect Dojo.")
         except Exception:
             logging.error("Error accessing files for "+elem["site"])

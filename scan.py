@@ -158,7 +158,7 @@ def loginAndScan(zap, proxy, script, env):
     while (zap.ascan.status() != "100"):
         status=zap.ascan.status()
         logging.info(status)
-        time.sleep(5)
+        time.sleep(10)
     logging.info("Active scanner complete")
 
     
