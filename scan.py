@@ -10,7 +10,7 @@ import importlib
 
 from dotenv import load_dotenv
 
-import export_reports
+#import export_reports
 
 
 
@@ -268,7 +268,8 @@ if __name__ == "__main__":
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
             context,site = loginAndScan(zap, proxy, elem["login"], elem["env"])
-            if site is not "":
+            
+            if site != "":
                 reportFile = pullReport(zap, context, "https://" + site, elem["site"])
             zap.forcedUser.set_forced_user_mode_enabled(False)
 
