@@ -7,8 +7,7 @@ WORKDIR /app
 
 USER root
 
-#setup report directory
-RUN mkdir ${REPORT_DIR}
+
 #install python
 RUN apt-get install -y python3
 
@@ -32,5 +31,7 @@ RUN pip install --upgrade pip
 
 RUN pip install -r requirements.txt
 RUN chmod 777 launcher.sh
+
+USER zap
 
 ENTRYPOINT [ "/bin/bash" ]
