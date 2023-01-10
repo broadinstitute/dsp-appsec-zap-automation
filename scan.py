@@ -140,26 +140,26 @@ def loginAndScan(zap, proxy, script, env):
 
     #run ajax spider
     #this needs to be configurable.
-    zap.ajaxSpider.set_option_max_duration(4)
-    zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
-    time.sleep(10)
-    count=0
-    while (zap.ajaxSpider.status == "running"):
-        logging.debug("Ajax Spider still running")
-        time.sleep(10)
-        count=count+1
-        if count > 24:
-            zap.ajaxSpider.stop()
-    logging.info("Ajax Spider complete")
+    # zap.ajaxSpider.set_option_max_duration(4)
+    # zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
+    # time.sleep(10)
+    # count=0
+    # while (zap.ajaxSpider.status == "running"):
+    #     logging.debug("Ajax Spider still running")
+    #     time.sleep(10)
+    #     count=count+1
+    #     if count > 24:
+    #         zap.ajaxSpider.stop()
+    # logging.info("Ajax Spider complete")
 
-    # #Run active scan as the authenticated user.
-    zap.ascan.scan_as_user(contextid=contextID, userid=userId)
-    time.sleep(60)
-    while (zap.ascan.status() != "100"):
-        status=zap.ascan.status()
-        logging.info(status)
-        time.sleep(10)
-    logging.info("Active scanner complete")
+    # # #Run active scan as the authenticated user.
+    # zap.ascan.scan_as_user(contextid=contextID, userid=userId)
+    # time.sleep(60)
+    # while (zap.ascan.status() != "100"):
+    #     status=zap.ascan.status()
+    #     logging.info(status)
+    #     time.sleep(10)
+    # logging.info("Active scanner complete")
 
     if authtype == "token":
         zap.script.disable(scriptname)
