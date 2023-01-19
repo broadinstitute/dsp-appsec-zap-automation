@@ -31,7 +31,8 @@ RUN pip install --upgrade pip
 
 RUN pip install -r requirements.txt
 RUN chmod 777 launcher.sh
-RUN chmod -R 777 $REPORT_DIR
+RUN mkdir ${REPORT_DIR}
+RUN chmod -R 777 ${REPORT_DIR}
 
 USER zap
 
