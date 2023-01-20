@@ -204,20 +204,10 @@ def testScan(proxy, script, env):
     #passive scan
     zap.pscan.enable_all_scanners()
    
-    #run spider
-    zap.spider.scan_as_user(contextID, userId, "https://"+site)
-    time.sleep(5)
-    while (zap.spider.status == "running"):
-        logging.debug("Spider still running")
-        time.sleep(5)
-    logging.info("Spider complete")
-
-
-
-    zap.forcedUser.set_forced_user_mode_enabled(False)
-
     if authtype == "token":
         zap.script.disable(scriptname)
+
+    return context,site
 
 if __name__ == "__main__":
     #attempt to wait to initialize zap
@@ -234,11 +224,17 @@ if __name__ == "__main__":
         logging.info(proxy)
         logging.info("Test scan running")
 
+        zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+
         f = open("test_sites.json", "r")
         sites = json.load(f)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
-            testScan(proxy, elem["login"], elem["env"])
+            context, site = testScan(proxy, elem["login"], elem["env"])
+
+            if site != "":
+                reportFile = pullReport(zap, context, "https://" + site, elem["site"])
+            zap.forcedUser.set_forced_user_mode_enabled(False)
 
     else:
         logging.basicConfig(level="INFO")
