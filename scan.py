@@ -182,7 +182,7 @@ def testScan(proxy, script, env):
     site, authtype, logged_in=login(proxy,env,script)
     if logged_in == False:
         logging.info("Failed to login, no scan will be performed for "+script)
-        return
+        return "", ""
 
     logging.info("site is:"+ site)
     domain = site.split(":")[0]
