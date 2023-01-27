@@ -238,6 +238,7 @@ if __name__ == "__main__":
 
         f = open("test_sites.json", "r")
         sites = json.load(f)
+        logging.info(sites)
         for elem in sites:
             logging.info("Starting test scan for "+elem["site"])
             context = new_context(zap, elem["login"])
