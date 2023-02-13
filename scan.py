@@ -256,7 +256,7 @@ if __name__ == "__main__":
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
             context = new_context(zap, elem["login"]);
-            context,site = loginAndScan(zap, proxy, elem["login"], elem["env"])
+            context,site = loginAndScan(proxy, elem["login"], elem["env"])
             
             if site != "":
                 reportFile = pullReport(zap, context, "https://" + site, elem["site"])
