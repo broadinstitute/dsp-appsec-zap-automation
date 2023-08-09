@@ -151,8 +151,9 @@ def loginAndScan(proxy, script, env):
         if count > 24:
             zap.ajaxSpider.stop()
     logging.info("Ajax Spider complete")
+
     # Do our best to finish passive scans first.
-    while(int(zap.pscan.records_to_scan()) > 0):
+    while(int(zap.pscan.records_to_scan) > 0):
         time.sleep(10)
     zap.core.run_garbage_collection()
 
