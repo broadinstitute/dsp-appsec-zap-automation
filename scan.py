@@ -253,6 +253,7 @@ if __name__ == "__main__":
    
         f = open("sites.json", "r")
         sites = json.load(f)
+        zap.core.new_session(name="Untitled Session", overwrite=True)
         for elem in sites:
             logging.info("Starting scan for "+elem["site"])
             context = new_context(zap, elem["login"]);
@@ -261,6 +262,9 @@ if __name__ == "__main__":
             if site != "":
                 reportFile = pullReport(zap, context, "https://" + site, elem["site"])
             zap.forcedUser.set_forced_user_mode_enabled(False)
+            zap.context.remove_context(context)
+            zap.core.run_garbage_collection()
+            zap.core.new_session(name="Untitled Session", overwrite=True)
 
     logging.info("All tests complete")
 
