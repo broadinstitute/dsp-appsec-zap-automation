@@ -151,13 +151,17 @@ def loginAndScan(proxy, script, env):
         if count > 24:
             zap.ajaxSpider.stop()
     logging.info("Ajax Spider complete")
+    # Do our best to finish passive scans first.
+    while(zap.pscan.records_to_scan() > 0):
+        time.sleep(10)
+    zap.core.run_garbage_collection()
 
-    # #Run active scan as the authenticated user.
+    # Run active scan as the authenticated user.
     zap.ascan.scan_as_user(contextid=contextID, userid=userId)
     time.sleep(60)
     while (zap.ascan.status() != "100"):
         status=zap.ascan.status()
-        logging.info(status)
+        logging.info("Active scan is at this percentage:" + status)
         time.sleep(10)
     logging.info("Active scanner complete")
 
