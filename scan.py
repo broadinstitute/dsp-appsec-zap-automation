@@ -215,10 +215,10 @@ def scan(proxy, context, domain):
 if __name__ == "__main__":
     #attempt to wait to initialize zap
     #If running locally, this can be commented out.
-    #time.sleep(40)
+    time.sleep(40)
 
     #For local testing
-    load_dotenv("test.env")
+    #load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
     zap = ZAPv2(proxies={"http": proxy, "https": proxy})
     sites = {}
