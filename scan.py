@@ -11,8 +11,6 @@ import importlib
 from dotenv import load_dotenv
 
 
-scriptname = "token_auth.js"
-
 
 
 def new_context(zap, context_name):
@@ -64,7 +62,8 @@ def cookieauth(zap, contextID, domain):
     zap.forcedUser.set_forced_user_mode_enabled(True)
     return username, userid
 
-def tokenauth(zap, context, domain, name="auth"):
+
+def tokenauth(zap, context, token, name="auth"):
     """
     Sets up the ZAP context to use tokens for authentication.
     Only works if the token has been put in the sessid cookie.
@@ -73,16 +72,6 @@ def tokenauth(zap, context, domain, name="auth"):
     contextID = zap.context.context(context)["id"]
     zap.users.new_user(contextID, username)
     userid = zap.users.users_list(contextID)[0]["id"]
-
-    #ZAP needs the port, if testing locally over a different port, update this value.
-    sessions = zap.httpsessions.sessions(site = domain)
-
-    #sessid is identified by ZAP as a session cookie by default. 
-    #It probably makes sense to have the cookie used be controlled by config.
-    try:
-        token = sessions[-1]["session"][1]["sessid"]["value"]
-    except:
-        logging.info("Failed to find cookie with token")
         
     # Replacer set up
     results = zap.context.context(context)
@@ -108,24 +97,7 @@ def tokenauth(zap, context, domain, name="auth"):
         replacement=bearer,
         url=url_regx
     )
-
-
-
-    #the token auth script is general purpose, as long as the sessid cookie is used for storing the token.
-    #This works when ZAP is local.
-    # cwd = os.getcwd()
-    # scriptlocation = cwd + "/scripts/token_auth.js"
-    
-    # zap.script.load(scriptname,"httpsender","ECMAScript : Oracle Nashorn",scriptlocation)
-
-
-    # zap.script.set_global_var("token",token)
-
-    # zap.users.set_user_enabled(contextID,userid,True)
-    # zap.forcedUser.set_forced_user(contextID,userid)
-    # zap.forcedUser.set_forced_user_mode_enabled(True)
-    # zap.script.enable(scriptname)
-    return username, userid, scriptname
+    return username, userid
 
 
 def localPullReport(zap, context, url, site, reportDir):
@@ -139,6 +111,7 @@ def localPullReport(zap, context, url, site, reportDir):
     os.mkdir(reportDir)
     returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= reportDir)
     return returnvalue
+
 
 def login(proxy, script, env):
     """
@@ -170,9 +143,15 @@ def login(proxy, script, env):
     zap.context.exclude_from_context(context, ".*/complete.*")
 
     if authtype == "cookie":
-        _, userId=cookieauth(zap, contextID, site)
+        _, userId = cookieauth(zap, contextID, site)
     elif authtype == "token":
-        _, userId, _=tokenauth(zap, context, site)
+        sessions = zap.httpsessions.sessions(site = domain)
+
+        try:
+            token = sessions[-1]["session"][1]["sessid"]["value"]
+        except:
+            logging.info("Failed to find cookie with token")
+        _, userId = tokenauth(zap, context, token=token)
     
     return logged_in, domain, userId
 
