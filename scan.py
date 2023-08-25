@@ -12,9 +12,6 @@ from dotenv import load_dotenv
 
 
 scriptname = "token_auth.js"
-# proxyHost = os.getenv("PROXY","127.0.0.1")
-# port = os.getenv("PORT", 8080)
-reportDir = os.getenv("REPORTDIR","./") # The directory that reports will be exported to
 
 
 
@@ -137,7 +134,7 @@ def localPullReport(zap, context, url, site, reportDir):
     Directory must be local to ZAP.
     """
     template = "traditional-xml"
-    reportDir = os.getenv("REPORT_DIR")+'/'+site
+    reportDir = reportDir + '/' + site
     logging.info("Pulling report with following arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
     os.mkdir(reportDir)
     returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= reportDir)
@@ -239,10 +236,10 @@ def scan(proxy, context, domain):
 if __name__ == "__main__":
     #attempt to wait to initialize zap
     #If running locally, this can be commented out.
-    time.sleep(40)
+    #time.sleep(40)
 
     #For local testing
-    #load_dotenv("test.env")
+    load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
     zap = ZAPv2(proxies={"http": proxy, "https": proxy})
     sites = {}
@@ -269,7 +266,7 @@ if __name__ == "__main__":
             if (os.getenv("DEBUG") != "debug"):
                 scan(proxy, context, domain)
             try:
-                reportFile = localPullReport(zap, context, "https://" + domain, site_name, reportDir)
+                reportFile = localPullReport(zap, context, "https://" + domain, site_name, os.getenv("REPORT_DIR"))
             except Exception:
                 logging.error("Failed to pull report for scan.")
     
