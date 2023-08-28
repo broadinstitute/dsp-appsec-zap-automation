@@ -10,20 +10,40 @@ import importlib
 
 from dotenv import load_dotenv
 
-#import export_reports
 
 
 
 def new_context(zap, context_name):
     """
-    Creates a new context in zap for the particular scan.
+    Creates a new context in zap for a given scan.
     """
+    if context_name == None:
+        context_name = "default"
     zap.context.new_context(context_name)
-    #returning context name. In case this code changes.
     return context_name
-    
 
-def cookieauth(zap,contextID,domain):
+
+def load_sites():
+    f = open("sites.json", "r")
+    sites = json.load(f)
+    return sites
+
+
+def load_test_sites():
+    f = open("test_sites.json", "r")
+    sites = json.load(f)
+    return sites
+
+    
+def parse_site(site):
+    site_name = elem["site"]
+    login_script_name = elem["login"]
+    environment = elem["env"]
+
+    return site_name, login_script_name, environment
+
+
+def cookieauth(zap, contextID, domain):
     """
     Sets up the ZAP context to use cookies for authentication.
     Only works if the cookie used by the app is recognized as a session cookie by ZAP.
@@ -42,73 +62,75 @@ def cookieauth(zap,contextID,domain):
     zap.forcedUser.set_forced_user_mode_enabled(True)
     return username, userid
 
-def tokenauth(zap, contextID, domain):
+
+def tokenauth(zap, context, token, name="auth"):
     """
     Sets up the ZAP context to use tokens for authentication.
     Only works if the token has been put in the sessid cookie.
     """
     username = "testuser"
+    contextID = zap.context.context(context)["id"]
     zap.users.new_user(contextID, username)
     userid = zap.users.users_list(contextID)[0]["id"]
-
-    #ZAP needs the port, if testing locally over a different port, update this value.
-    sessions = zap.httpsessions.sessions(site = domain)
-
-    #sessid is identified by ZAP as a session cookie by default. 
-    #It probably makes sense to have the cookie used be controlled by config.
-    try:
-        token = sessions[-1]["session"][1]["sessid"]["value"]
-    except:
-        logging.info("Failed to find cookie with token")
         
-    #the token auth script is general purpose, as long as the sessid cookie is used for storing the token.
-    #This works when ZAP is local.
-    cwd = os.getcwd()
-    scriptlocation = cwd + "/scripts/token_auth.js"
-    scriptname = "token_auth.js"
-    zap.script.load(scriptname,"httpsender","ECMAScript : Oracle Nashorn",scriptlocation)
+    # Replacer set up
+    results = zap.context.context(context)
+    include_string = results["includeRegexs"]
+
+    include_string = include_string.lstrip("[")
+    include_string = include_string.rstrip("]")
+    templist = include_string.split(",")
+    url_regx = ""
+    for elem in templist:
+        elem = elem.strip('"')
+        url_regx = url_regx + f"|{elem}"
+    url_regx = url_regx.lstrip("|")
+
+    bearer = f"Bearer {token}"
+    zap.replacer.remove_rule("auth")
+    zap.replacer.add_rule(
+        description=name,
+        enabled=True,
+        matchtype="REQ_HEADER",
+        matchregex=False,
+        matchstring="Authorization",
+        replacement=bearer,
+        url=url_regx
+    )
+    return username, userid
 
 
-    zap.script.set_global_var("token",token)
-
-    zap.users.set_user_enabled(contextID,userid,True)
-    zap.forcedUser.set_forced_user(contextID,userid)
-    zap.forcedUser.set_forced_user_mode_enabled(True)
-    zap.script.enable(scriptname)
-    return username, userid, scriptname
-
-
-def pullReport(zap, context, url, site):
+def localPullReport(zap, context, url, site, reportDir):
     """
     Requests report from ZAP and saves it in the directory specified.
     Directory must be local to ZAP.
     """
     template = "traditional-xml"
-    reportDir = os.getenv("REPORT_DIR")+'/'+site
+    reportDir = reportDir + '/' + site
     logging.info("Pulling report with following arguements: title : "+site+", template : "+template+", contexts : "+context+", sites : "+url)
     os.mkdir(reportDir)
     returnvalue=zap.reports.generate(title=site, template=template, contexts=context, sites=url,reportdir= reportDir)
     return returnvalue
 
 
-def loginAndScan(proxy, script, env):
+def login(proxy, script, env):
     """
-    Calls the login function for the site being scanned, 
-    and then runs crawlers and scans against it.
+    Calls the login function for the site being scanned
     """
-    module = importlib.import_module("logins." + script)
-    login = getattr(module, "login")
 
     #all sites will need to connect to zap and create a context.
     zap = ZAPv2(proxies={"http": proxy, "https": proxy})
     context = script
     contextID = zap.context.context(context)["id"]
     zap.authentication.set_authentication_method(contextID,"manualAuthentication")
-    
+
+    logged_in = False
+    module = importlib.import_module("logins." + script)
+    login = getattr(module, "login")
     site, authtype, logged_in=login(proxy,env,script)
     if logged_in == False:
         logging.info("Failed to login, no scan will be performed for "+script)
-        return "", ""
+        return logged_in, "", ""
 
     logging.info("site is:"+ site)
     domain = site.split(":")[0]
@@ -121,17 +143,29 @@ def loginAndScan(proxy, script, env):
     zap.context.exclude_from_context(context, ".*/complete.*")
 
     if authtype == "cookie":
-        userName, userId=cookieauth(zap, contextID, site)
+        _, userId = cookieauth(zap, contextID, site)
     elif authtype == "token":
-        userName, userId, scriptname=tokenauth(zap, contextID, site)
+        sessions = zap.httpsessions.sessions(site = domain)
+
+        try:
+            token = sessions[-1]["session"][1]["sessid"]["value"]
+        except:
+            logging.info("Failed to find cookie with token")
+        _, userId = tokenauth(zap, context, token=token)
     
-    #site has the port appended to it, using it like that can cause an issue with report generation
-    site=domain
+    return logged_in, domain, userId
+
+def crawl(proxy, context, domain):
+    """
+    Runs the crawlers and passive scanner
+    """
+    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    contextID = zap.context.context(context)["id"]
     #passive scan
     zap.pscan.enable_all_scanners()
-   
-    #run spider
-    zap.spider.scan_as_user(contextID, userId, "https://"+site)
+
+        #run spider
+    zap.spider.scan(recurse=True, contextname=context, url="https://"+domain)
     time.sleep(5)
     while (zap.spider.status == "running"):
         logging.debug("Spider still running")
@@ -141,7 +175,7 @@ def loginAndScan(proxy, script, env):
     #run ajax spider
     #this needs to be configurable.
     zap.ajaxSpider.set_option_max_duration(4)
-    zap.ajaxSpider.scan_as_user(context, userName, "https://"+site)
+    zap.ajaxSpider.scan(contextname=context, url="https://"+domain)
     time.sleep(10)
     count=0
     while (zap.ajaxSpider.status == "running"):
@@ -155,10 +189,18 @@ def loginAndScan(proxy, script, env):
     # Do our best to finish passive scans first.
     while(int(zap.pscan.records_to_scan) > 0):
         time.sleep(10)
-    zap.core.run_garbage_collection()
+    return
+
+
+def scan(proxy, context, domain):
+    """
+    Runs the crawlers and active scanner
+    """
+    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    contextID = zap.context.context(context)["id"]
 
     # Run active scan as the authenticated user.
-    zap.ascan.scan_as_user(contextid=contextID, userid=userId)
+    zap.ascan.scan(url="https://"+domain, contextid=contextID)
     time.sleep(60)
     while (zap.ascan.status() != "100"):
         status=zap.ascan.status()
@@ -166,62 +208,9 @@ def loginAndScan(proxy, script, env):
         time.sleep(10)
     logging.info("Active scanner complete")
 
-    if authtype == "token":
-        zap.script.disable(scriptname)
-    return context,site
+    return
 
-def testScan(proxy, script, env):
-    """
-    Calls the login function for the site being scanned, 
-    and runs the spider. It does not run attacks or generate a report.
-    """
-    module = importlib.import_module("logins." + script)
-    login = getattr(module, "login")
 
-    #all sites will need to connect to zap and create a context.
-    zap = ZAPv2(proxies={"http": proxy, "https": proxy})
-    #context = new_context(zap, script)
-    context = script
-    contextID = zap.context.context(context)["id"]
-    zap.authentication.set_authentication_method(contextID,"manualAuthentication")
-    
-    site, authtype, logged_in=login(proxy,env,script)
-    if logged_in == False:
-        logging.info("Failed to login, no scan will be performed for "+script)
-        return "", ""
-
-    logging.info("site is:"+ site)
-    domain = site.split(":")[0]
-    zap.context.include_in_context(context, ".*" + domain + ".*")
-    
-
-    #There's probably a way to make this better. probably by putting it in the login script
-    zap.context.exclude_from_context(context, ".*/login.*")
-    zap.context.exclude_from_context(context, ".*/logout.*")
-    zap.context.exclude_from_context(context, ".*/complete.*")
-
-    if authtype == "cookie":
-        userName, userId=cookieauth(zap, contextID, site)
-    elif authtype == "token":
-        userName, userId, scriptname=tokenauth(zap, contextID, site)
-    
-    #site has the port appended to it, using it like that can cause an issue with report generation
-    site=domain
-    #passive scan
-    zap.pscan.enable_all_scanners()
-
-    #run spider
-    zap.spider.scan_as_user(contextID, userId, "https://"+site)
-    time.sleep(5)
-    while (zap.spider.status == "running"):
-        logging.debug("Spider still running")
-        time.sleep(5)
-    logging.info("Spider complete")
-   
-    if authtype == "token":
-        zap.script.disable(scriptname)
-
-    return context,site
 
 if __name__ == "__main__":
     #attempt to wait to initialize zap
@@ -232,44 +221,41 @@ if __name__ == "__main__":
     #load_dotenv("test.env")
     proxy = str(os.getenv("PROXY")) + ":" + str(os.getenv("PORT"))
     zap = ZAPv2(proxies={"http": proxy, "https": proxy})
+    sites = {}
      
     if (os.getenv("DEBUG")=="debug"):
-       
-        logging.basicConfig(level="INFO")
-        logging.info(proxy)
-        logging.info("Test scan running")
+        sites = load_test_sites()
+    else:
+        sites = load_sites()
+    
+    logging.basicConfig(level="INFO")
+    logging.info(proxy)
 
+    zap.core.new_session(name="Untitled Session", overwrite=True)
+    for elem in sites:
+        site_name, login_script_name, environment = parse_site(elem)
         
 
-        f = open("test_sites.json", "r")
-        sites = json.load(f)
-        for elem in sites:
-            logging.info("Starting scan for "+elem["site"])
-            context = new_context(zap, elem["login"])
-            context,site = testScan(proxy, elem["login"], elem["env"])
+        logging.info("Starting scan for " + site_name)
+        context = new_context(zap, login_script_name)
 
-            if site != "":
-                reportFile = pullReport(zap, context, "https://" + site, elem["site"])
-            zap.forcedUser.set_forced_user_mode_enabled(False)
+        success, domain, userId = login(proxy, login_script_name, environment)
+        if success:
+            crawl(proxy, context, domain)
+            if (os.getenv("DEBUG") != "debug"):
+                scan(proxy, context, domain)
+            try:
+                reportFile = localPullReport(zap, context, "https://" + domain, site_name, os.getenv("REPORT_DIR"))
+            except Exception:
+                logging.error("Failed to pull report for scan.")
+    
 
-    else:
-        logging.basicConfig(level="INFO")
-        logging.info(proxy)
-   
-        f = open("sites.json", "r")
-        sites = json.load(f)
+        zap.replacer.remove_rule("auth")
+
+        zap.forcedUser.set_forced_user_mode_enabled(False)
+        zap.context.remove_context(context)
+        zap.core.run_garbage_collection()
         zap.core.new_session(name="Untitled Session", overwrite=True)
-        for elem in sites:
-            logging.info("Starting scan for "+elem["site"])
-            context = new_context(zap, elem["login"]);
-            context,site = loginAndScan(proxy, elem["login"], elem["env"])
-            
-            if site != "":
-                reportFile = pullReport(zap, context, "https://" + site, elem["site"])
-            zap.forcedUser.set_forced_user_mode_enabled(False)
-            zap.context.remove_context(context)
-            zap.core.run_garbage_collection()
-            zap.core.new_session(name="Untitled Session", overwrite=True)
 
     logging.info("All tests complete")
 
