@@ -1,14 +1,11 @@
 from http.client import PROXY_AUTHENTICATION_REQUIRED
 import json
-from posixpath import split
 import time
 import os
 import logging
 
 from zapv2 import ZAPv2
 import importlib
-
-from dotenv import load_dotenv
 
 
 
