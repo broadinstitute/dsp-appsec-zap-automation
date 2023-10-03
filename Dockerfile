@@ -4,6 +4,7 @@ ARG REPORT_DIR
 
 COPY . /app
 WORKDIR /app
+COPY zap_helper/scan.py .
 
 USER root
 

@@ -142,7 +142,7 @@ def login(proxy, script, env):
     if authtype == "cookie":
         _, userId = cookieauth(zap, contextID, site)
     elif authtype == "token":
-        sessions = zap.httpsessions.sessions(site = domain)
+        sessions = zap.httpsessions.sessions(site = site)
 
         try:
             token = sessions[-1]["session"][1]["sessid"]["value"]
