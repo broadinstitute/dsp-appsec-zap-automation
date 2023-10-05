@@ -33,9 +33,9 @@ def load_test_sites():
 
     
 def parse_site(site):
-    site_name = elem["site"]
-    login_script_name = elem["login"]
-    environment = elem["env"]
+    site_name = site["site"]
+    login_script_name = site["login"]
+    environment = site["env"]
 
     return site_name, login_script_name, environment
 
