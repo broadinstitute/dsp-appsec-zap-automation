@@ -1,14 +1,11 @@
 from http.client import PROXY_AUTHENTICATION_REQUIRED
 import json
-from posixpath import split
 import time
 import os
 import logging
 
 from zapv2 import ZAPv2
 import importlib
-
-from dotenv import load_dotenv
 
 
 
@@ -36,9 +33,9 @@ def load_test_sites():
 
     
 def parse_site(site):
-    site_name = elem["site"]
-    login_script_name = elem["login"]
-    environment = elem["env"]
+    site_name = site["site"]
+    login_script_name = site["login"]
+    environment = site["env"]
 
     return site_name, login_script_name, environment
 
@@ -145,7 +142,7 @@ def login(proxy, script, env):
     if authtype == "cookie":
         _, userId = cookieauth(zap, contextID, site)
     elif authtype == "token":
-        sessions = zap.httpsessions.sessions(site = domain)
+        sessions = zap.httpsessions.sessions(site = site)
 
         try:
             token = sessions[-1]["session"][1]["sessid"]["value"]
